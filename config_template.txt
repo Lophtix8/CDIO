@@ -1,0 +1,16 @@
+# template for config file 
+# write the following for each material 
+
+# structure
+vasp_file = "..."
+x_scaling = x1 x2 x3 ...                   # x, y, z scaling for each simulation  
+y _scaling = y1 y2 y3 ...               
+z_scaling = z1 z2 z3 ...
+custom_fracture = True/False               # choose if the fracture should be done with intervals or custom 
+fracture_pos = x_1 x_2 y_1 y_2 z_1 z_2     # interval for fracture 
+
+# simulation 
+temp = [t1, t2, t3]
+stress_plane = 110
+t_interval = 5
+iterations = 1000
