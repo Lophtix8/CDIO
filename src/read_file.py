@@ -3,6 +3,8 @@ import sys
 import logging
 
 def read_file():
+    # Main function that reads from file and should return the dictionary to build
+    
     logger = setup_logging()
     
     config_file = input("Enter name of the config file: ").strip()
@@ -19,10 +21,16 @@ def read_file():
     for block in blocks:
         configs.append(return_config_dicts(block))
         
+    # Add some fail-safe checks here on the dictionaries. For instance to check that the length of
+    # the x- y- and z-scaling lists are of the same length.
+    # Also the logging needs to be fixed, right now it is only setup but not used.
+    # It should be replace the print messages.
+        
     print("Converting data succeded!")
     
 
 def return_config_dicts(block):
+    # Function that creates the dictionary for each block in the config file
     config_data = block.split('\n')
     config_dict = {}
     
@@ -42,6 +50,8 @@ def return_config_dicts(block):
 
 
 def get_vasp_files(files_str):
+    # Gets the vasp file names from the config file and checks so they exist.
+    
     vasp_files = files_str.strip().split()
     for file_name in vasp_files:
         if not Path(file_name).exists():
@@ -51,6 +61,7 @@ def get_vasp_files(files_str):
 
 
 def get_integer_list(string_of_ints):
+    # Gets the values from the config file that are lists of ints, i.e temp, scalings etc.
     try:
         scalings = list(map(int, string_of_ints.strip().split()))
     except: 
@@ -59,6 +70,8 @@ def get_integer_list(string_of_ints):
     return scalings
 
 def get_bool(custom_frac_str):
+    # Gets the custom frac bool.
+    
     custom_frac_str = custom_frac_str.strip().lower()
     if custom_frac_str == "false" or custom_frac_str == "true":
         return custom_frac_str
@@ -67,6 +80,9 @@ def get_bool(custom_frac_str):
         sys.exit()
 
 def get_fracture_info(fracture_str):
+    # Gets the coordinates/intervals of the fracture.
+    # Changed format on this line in config so that the x, y and z values can be separated easily. See config_test.txt.
+    # Can change this back later of course, it is an idea of how it can be solved in a nice way.
     try:
         fracture_lst = fracture_str.strip().split(';')
         fracture_coords = [list(map(float, a.strip().split())) for a in fracture_lst]
@@ -76,6 +92,7 @@ def get_fracture_info(fracture_str):
     return fracture_coords
 
 def get_int(int_as_string):
+    # Gets values that are only an int.
     try:
         integer = int(int_as_string.strip())
     except:
