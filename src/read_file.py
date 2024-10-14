@@ -3,9 +3,15 @@ import sys
 import logging
 
 def read_file():
-    # Main function that reads from file and should return the dictionary to build.
+    """The main function of the program. It reads the config file and creates
+    a list for the dictionaries that will contain the config data.
+
+    Returns:
+        List: Contains dictionaries for each block in the config file.
+    """
     
     try:
+        # Insert the config file that should be used.
         f = open("config_test.txt")
     except:
         logger.error("Config file does not exist.")
@@ -13,6 +19,9 @@ def read_file():
     
     logger.info("Reading config file...")   
     lines = f.read()
+    
+    # Divides the config file into blocks.
+    # A block specifies simulation data/settings for one or more vasp-files.
     blocks = lines.split("\n\n")
     
     configs = []
@@ -21,22 +30,28 @@ def read_file():
     for block in blocks:
         configs.append(return_config_dicts(block, i))
         i += 1
-        
-    # Add some fail-safe checks here on the dictionaries. For instance to check that the length of
-    # the x- y- and z-scaling lists are of the same length.
-    # Also the logging needs to be fixed, right now it is only setup but not used.
-    # It should be replace the print messages.
-        
-    logger.info("Succeded!")
+    
+    print(configs)
+    logger.info("Done!")
     
     return configs
     
 
 def return_config_dicts(block, i):
-    # Function that creates the dictionary for each block in the config file
+    """Converts each line of a block into the desired datatype and format.
+    It calls other functions for the data conversion for each line and checks
+    for possible errors in the config file.
+
+    Args:
+        block (str): Contains settings for simulation on one or more vasp-files.
+        i (int): The block number, i.e the i:th block in the config file.
+
+    Returns:
+        dict: Contains the data of a block in the desired format.
+    """
     
     logger.info("Converting data for config block " + str(i) + "...")
-    config_data = block.split('\n')
+    config_data = block.strip().split('\n')
     
     if len(config_data) != 10:
         logger.error("Invalid format on the config block.")
@@ -61,23 +76,41 @@ def return_config_dicts(block, i):
     
     logger.info("Succeded converting data for block " + str(i) + "!")
     
-    print(config_dict)
+    # Suggestion: Change temps list to an int, i.e only one temp for each block.
+    # Possibility for more fail-safe checks.
+    
     return config_dict
 
 
 def get_vasp_files(files_str):
-    # Gets the vasp file names from the config file and checks so they exist.
+    """Converts a string to a list with paths to vasp-files.
+
+    Args:
+        files_str (str): Contains the vasp-file names separated with a space.
+
+    Returns:
+        list: A list with the vasp-file paths.
+    """
     
+    # Uncomment sys.exit() when we have vasp-files.
     vasp_files = files_str.strip().split()
     for file_name in vasp_files:
         if not Path(file_name).exists():
-            logger.error("File '" + file_name + "' does not exist.")
-            #sys.exit()                 
+            #logger.error("File '" + file_name + "' does not exist.")
+            #sys.exit()
+            continue              
     return vasp_files
 
 
 def get_integer_list(string_of_ints):
-    # Gets the values from the config file that are lists of ints, i.e temp, scalings etc.
+    """Converts a string to a list of ints. Each int should be >=0.
+
+    Args:
+        string_of_ints (str): Contains the ints separated with a space.
+
+    Returns:
+        list: A list of ints. It can for instance be the supercell sizes.
+    """
     try:
         integers = list(map(int, string_of_ints.strip().split()))
         for element in integers:
@@ -90,7 +123,15 @@ def get_integer_list(string_of_ints):
     return integers
 
 def get_bool(custom_frac_str):
-    # Gets the custom frac bool.
+    """Converts a string to a bool. In this case a bool saying if the fracture
+    is specified in coordinates or intervals.
+
+    Args:
+        custom_frac_str (str): A string that should be true or false.
+
+    Returns:
+        bool: The string converted to either true or false.
+    """
     
     custom_frac_str = custom_frac_str.strip().lower()
     if custom_frac_str == "false":
@@ -102,9 +143,17 @@ def get_bool(custom_frac_str):
         sys.exit()
 
 def get_fracture_info(fracture_str, custom_frac):
-    # Gets the coordinates/intervals of the fracture.
-    # Changed format on this line in config so that the x, y and z values can be separated easily. See config_test.txt.
-    # Can change this back later of course, it is an idea of how it can be solved in a nice way.
+    """Converts a string of fracture intervals/coordinates to a list. The list
+    will either contain lists with atom coordinates: [x_i, y_i, z_i], or three
+    lists with intervals in each direction: [x_start, x_stop].
+
+    Args:
+        fracture_str (str): Specifies the fracture as a string.
+        custom_frac (bool): Specifies which format fracture_str will be on.
+
+    Returns:
+        _type_: _description_
+    """
     try:
         fracture_lst = fracture_str.strip().split(';')
         fracture_coords = [list(map(float, a.strip().split())) for a in fracture_lst]
@@ -114,7 +163,8 @@ def get_fracture_info(fracture_str, custom_frac):
         
     if custom_frac and all(len(lst) == 3 for lst in fracture_coords):
         return fracture_coords
-    elif not custom_frac and all(len(lst) == 2 for lst in fracture_coords):
+    elif not (custom_frac and all(len(lst) == 2 for lst in fracture_coords) and
+              len(fracture_coords) == 3):
         return fracture_coords
     else:
         logger.error("Invalid format on fracture intervals/coordinates.")
@@ -122,7 +172,16 @@ def get_fracture_info(fracture_str, custom_frac):
         
 
 def get_int(int_as_string):
-    # Gets values that are only an int.
+    """Converts a string to an int.
+
+    Args:
+        int_as_string (str): The string to be converted to an int.
+
+    Returns:
+        int: The int that has been converted. Can for instance be the
+        number of iterations in the simulation.
+    """
+
     try:
         integer = int(int_as_string.strip())
         if integer < 0:
@@ -134,24 +193,42 @@ def get_int(int_as_string):
     
 
 def setup_logging(log_file='read_file.log', log_to_console=True, log_level=logging.DEBUG):
+    """A function that sets up logging for the program so that it is easier to
+    debug. It specifies which file it writes to and rules for logging in the
+    console and file. 
+
+    Args:
+        log_file (str, optional): Specifies the file for the logging. 
+        Defaults to 'read_file.log'.
+        log_to_console (bool, optional): Specifies if console should be used for
+        logging. Defaults to True.
+        log_level (class 'function', optional): Sets the minimum level of logging
+        messages for them to be written to the log file. Defaults to logging.DEBUG.
+
+    Returns:
+        class logging.Logger: The logger with the specified rules for this program.
+    """
     
-    # Creates a logger for this program
+    # Creates a logger.
     logger = logging.getLogger(__name__)
     logger.setLevel(log_level)
     
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     
-    # Sets up logging to a logfile
+    # Sets up logging to a logfile.
+    # mode='w' means file is overwritten when program starts. 
+    # mode='a' would change to append to end of file instead of overwrite.
     file_handler = logging.FileHandler(log_file, mode='w')
     file_handler.setLevel(log_level)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     
-    # Sets up logging to the console
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.WARNING)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    # Sets up logging to the console.
+    if log_to_console:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.WARNING)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
     
     return logger
 
