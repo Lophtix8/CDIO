@@ -18,9 +18,16 @@ atoms = FaceCenteredCubic(directions=[[1,0,0],[0,1,0],[0,0,1]], symbol="Cu", siz
 
 mpstruct = read("Ar.poscar")
 
-Ar_super = mpstruct*(2,1,1)
+Ar_super = mpstruct*(2,2,2)
+print(Ar_super.get_scaled_positions())
 
-write("argon_gas.poscar", Ar_super, format="vasp")
+print(Ar_super.get_scaled_positions()[0])
 
-view(Ar_super)
+#Ar_super_new = Ar_super.get_scaled_positions()
+
+#Ar_super.set_positions(Ar_super.get_scaled_positions, apply_constraint=False)
+
+#write("argon_gas.poscar", Ar_super, format="vasp")
+
+#view(Ar_super)
 
