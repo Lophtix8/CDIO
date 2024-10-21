@@ -1,33 +1,42 @@
 
-from ase.build import molecule
 from ase.visualize import view
-from ase.build import bulk
-from ase.build import nanotube
-from ase.lattice.cubic import FaceCenteredCubic
 from ase.io import read
 from ase.io import write
 
-h2o = molecule("H2O")
-cu_prim = bulk("Cu","fcc",a=3.6)
-cu_cube = bulk("Cu","fcc",a=3.6,cubic=True)
-cu_super = cu_cube*(4,4,4)
 
-cnt1 = nanotube(6,0,length=4)
-
-atoms = FaceCenteredCubic(directions=[[1,0,0],[0,1,0],[0,0,1]], symbol="Cu", size=(4,4,4), pbc=True)
-
-mpstruct = read("Ar.poscar")
-
+mpstruct = read("Li3Fe.poscar")
 Ar_super = mpstruct*(2,2,2)
-print(Ar_super.get_scaled_positions())
 
-print(Ar_super.get_scaled_positions()[0])
+write("life.poscar", Ar_super, format="vasp")
 
-#Ar_super_new = Ar_super.get_scaled_positions()
+position_string = ""
+#print(Ar_super.get_scaled_positions())
+for coordinate_triple in Ar_super.get_scaled_positions():
+    print(str(coordinate_triple))
+    for coordinate in coordinate_triple:
+        #print(coordinate)
+        position_string += '{0:.9f}'.format(coordinate) + "  "
+    
+    position_string += '\n'
+    #position_string += str(coordinate_triple)#'{0:.9f}'.format
+print(position_string)
 
-#Ar_super.set_positions(Ar_super.get_scaled_positions, apply_constraint=False)
+#write("life.poscar", Ar_super, format="vasp")
 
-#write("argon_gas.poscar", Ar_super, format="vasp")
+"""
+with open("life.poscar",'r') as f:
+    definition_string = ""
+    for line in f.readlines():
+        if line.startswith("Cartesian"):
+            break
+        else:
+            print(line)
+            definition_string += str(line)
 
-#view(Ar_super)
+write_string = definition_string + "Direct\n" + position_string
 
+#with open("life.poscar", 'w') as f:
+    #f.write(write_string)
+
+mpstruct_test = read("life.poscar")
+view(mpstruct_test)"""
