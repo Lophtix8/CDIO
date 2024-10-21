@@ -1,12 +1,16 @@
 from ase.io.trajectory import Trajectory
 from ase import Atoms
 from ase import units
+from matplotlib import pyplot as plt
 
 def process_data(traj_filename):
 	"""
-	Main function for processing data. Depending on the arguments, it will create plots, calculate properties etc.  
+	Main function for processing data. Depending on the arguments, it will create plots, calculate properties etc.
 	"""
+	# This is just a temporary example
 	traj_properties = read_traj_file(traj_filename)
+	visualize(traj_properties, ekin=True, epot=True, etot=True, combined_plot=True)
+	visualize(traj_properties, temperature=True)
 	return
 
 def read_traj_file(traj_filename, pure = False):
@@ -32,16 +36,38 @@ def read_traj_file(traj_filename, pure = False):
 	
 	for atoms in traj:
 		# Properties in traj object.
-		atom_num = traj[-1].get_number_of_atoms()
+		atom_num = len(traj[-1])
 		traj_properties.append \
 			({"ekin": atoms.get_kinetic_energy()/atom_num,
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num})
 		
 		# Derived properties.
-		traj_properties[-1]["temp"] = traj_properties[-1]["ekin"] / (1.5 * units.kB)
+		traj_properties[-1]["temperature"] = traj_properties[-1]["ekin"] / (1.5 * units.kB)
 
 	return traj_properties
+
+def visualize(traj_properties, temperature = False, ekin = False, epot = False, etot = False, combined_plot = False):
+	"""
+	Creates plot(s) of parameters with respect to iteration.
+	"""
+	keys = traj_properties[-1].keys() # temperature, ekin, epot, etot
+	steps = range(len(traj_properties))
+
+	for key in keys:
+		if locals()[key]: # Check local bool variables temperature, ekin, epot, etot
+			y = []
+			for step in steps:
+				y.append(traj_properties[step][key])
+
+			plt.plot(steps, y)
+			
+			if not combined_plot:
+				plt.savefig(key+".pdf")
+				plt.clf()
 	
+	if combined_plot and keys is not []:
+		plt.savefig("combined.pdf")
+
 if __name__ == "__main__":
-	process_data("cu.traj")
+	process_data()
