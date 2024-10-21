@@ -7,7 +7,7 @@ from ase.io import write
 mpstruct = read("Li3Fe.poscar")
 Ar_super = mpstruct*(2,2,2)
 
-write("life.poscar", Ar_super, format="vasp")
+write("life.poscar", Ar_super, format="vasp", sort=True, direct=True)
 
 position_string = ""
 #print(Ar_super.get_scaled_positions())
