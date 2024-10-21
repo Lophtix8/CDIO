@@ -1,0 +1,25 @@
+  - vasp_files: [copper.vasp, copper2.vasp]
+    x_scalings: [5, 10, 15, 20]
+    y_scalings: [10, 20, 30, 40]
+    z_scalings: [5, 10, 15, 20]
+    custom_fracture: false
+    fracture: [[0, 0.5], [0, 0.5], [0, 0]]
+    temps: [0, 50, 300, 100]
+    stress_plane: "010"
+    t_interval: 5
+    iterations: 1000
+
+  - vasp_files: [aluminum.vasp]
+    x_scalings: [2, 4, 8, 16]
+    y_scalings: [10, 15, 25, 50]
+    z_scalings: [5, 10, 15, 20]
+    custom_fracture: false
+    fracture: [[0, 0.5], [0, 0.5], [0, 0]]
+    temps: [0, 50, 300, 20]
+    stress_plane: "100"
+    t_interval: 5
+    iterations: 1000
+
+
+
+  

@@ -1,0 +1,6 @@
+2024-10-22 00:15:59,468 - config_logger - INFO - Loading config file...
+2024-10-22 00:15:59,470 - config_logger - INFO - Checking data in config file...
+2024-10-22 00:15:59,470 - config_logger - WARNING - Removing file 'copper.vasp' since it does not exist.
+2024-10-22 00:15:59,470 - config_logger - WARNING - Removing file 'copper2.vasp' since it does not exist.
+2024-10-22 00:15:59,470 - config_logger - WARNING - Removing file 'aluminum.vasp' since it does not exist.
+2024-10-22 00:15:59,471 - config_logger - INFO - Done!
