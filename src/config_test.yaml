@@ -6,8 +6,8 @@
     fracture: [[0, 0.5], [0, 0.5], [0, 0]]
     temps: [0, 50, 300, 100]
     stress_plane: "010"
-    t_interval: 5
     iterations: 1000
+    t_interval: 5
 
   - vasp_files: [aluminum.vasp]
     x_scalings: [2, 4, 8, 16]

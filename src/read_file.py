@@ -37,6 +37,9 @@ def check_config_data(config_data):
     Args:
         config_data (list): A list of dictionaries with the config data.
     """
+    
+    # More fail-safe checks can be added like checking that all datatypes are correct.
+    
     logger.info("Checking data in config file...")
     keys_to_check = {"vasp_files", "x_scalings", "y_scalings", "z_scalings",
                      "custom_fracture", "temps", "stress_plane", "t_interval",
@@ -51,7 +54,7 @@ def check_config_data(config_data):
         existing_files = []
         for file in config["vasp_files"]:
             if not Path(file).exists():
-                logger.warning("Removing file '" + file + "' since it does not exist.")  
+                logger.warning("Removing file '" + file + "' from dictionary since it does not exist.")  
             else:
                 existing_files.append(file)
         
