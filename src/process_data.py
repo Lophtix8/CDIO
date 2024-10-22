@@ -47,27 +47,28 @@ def read_traj_file(traj_filename, pure = False):
 
 	return traj_properties
 
-def visualize(traj_properties, temperature = False, ekin = False, epot = False, etot = False, combined_plot = False):
+def visualize(traj_properties, combined_plot = False, **kwargs):
 	"""
 	Creates plot(s) of parameters with respect to iteration.
 	"""
-	keys = traj_properties[-1].keys() # temperature, ekin, epot, etot
+	
 	steps = range(len(traj_properties))
-
-	for key in keys:
-		if locals()[key]: # Check local bool variables temperature, ekin, epot, etot
+	
+	plt.clf()
+	for parameter, include in kwargs.items():
+		if include: # Check local bool variables temperature, ekin, epot, etot
 			y = []
 			for step in steps:
-				y.append(traj_properties[step][key])
+				y.append(traj_properties[step][parameter])
 
 			plt.plot(steps, y)
 			
 			if not combined_plot:
-				plt.savefig(key+".pdf")
+				plt.savefig(parameter+".pdf")
 				plt.clf()
 	
-	if combined_plot and keys is not []:
+	if combined_plot and kwargs is not {}: 
 		plt.savefig("combined.pdf")
 
 if __name__ == "__main__":
-	process_data()
+	process_data("")
