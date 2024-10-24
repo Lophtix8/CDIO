@@ -2,14 +2,14 @@ from ase.io.trajectory import Trajectory
 from ase import Atoms
 from ase import units
 
-def process_data(traj_filename):
+def process_data(traj_filename: str):
 	"""
 	Main function for processing data. Depending on the arguments, it will create plots, calculate properties etc.  
 	"""
 	traj_properties = read_traj_file(traj_filename)
 	return
 
-def read_traj_file(traj_filename, pure = False):
+def read_traj_file(traj_filename: str, pure: bool = False):
 	"""
 	Reads a trajectory file and returns a list of dictionaries containing the parameters, or the pure trajectory object.
 	Currently implemented properties include kinetic energy, potential energy, total energy and temperature.
@@ -21,7 +21,7 @@ def read_traj_file(traj_filename, pure = False):
 		traj = Trajectory(traj_filename)
 	
 	except:
-		Exception("Trajectory file not found.")
+		raise Exception("Trajectory file not found.")
 
 	# If pure, simply return the traj argument.
 	if pure:
