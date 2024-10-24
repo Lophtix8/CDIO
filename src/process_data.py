@@ -47,7 +47,7 @@ def read_traj_file(traj_filename, pure = False):
 
 	return traj_properties
 
-def visualize(traj_properties, combined_plot = False, **kwargs):
+def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool = False, **kwargs: bool):
 	"""
 	Creates plot(s) of parameters with respect to iteration.
 	"""
@@ -71,4 +71,4 @@ def visualize(traj_properties, combined_plot = False, **kwargs):
 		plt.savefig("combined.pdf")
 
 if __name__ == "__main__":
-	process_data("")
+	process_data("cu.praj")
