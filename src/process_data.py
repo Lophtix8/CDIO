@@ -71,4 +71,4 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 		plt.savefig("combined.pdf")
 
 if __name__ == "__main__":
-	process_data("cu.praj")
+	process_data("cu.traj")
