@@ -1,5 +1,5 @@
   - vasp_files: [copper.vasp, copper2.vasp]
-    x_scalings: [5, 10, 15, 20]
+    x_scalings: [5, 10, 15]
     y_scalings: [10, 20, 30, 40]
     z_scalings: [5, 10, 15, 20]
     custom_fracture: false
