@@ -42,8 +42,8 @@ def construct_crack(filename, custom_fracture, x_fracture, y_fracture, z_fractur
     lines_to_remove = []
     for line in supercell_lines[8:]: #the coordinates start on line 8 in poscar-files
         if (x_fracture[0] <= float(line.split()[0]) <= x_fracture[1])\
-        or (y_fracture[0] <= float(line.split()[1]) <= y_fracture[1])\
-        or (z_fracture[0] <= float(line.split()[2]) <= z_fracture[1]):
+        and (y_fracture[0] <= float(line.split()[1]) <= y_fracture[1])\
+        and (z_fracture[0] <= float(line.split()[2]) <= z_fracture[1]):
             lines_to_remove.append(line)
 
     for line in lines_to_remove:
