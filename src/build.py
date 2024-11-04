@@ -3,6 +3,18 @@ from ase.io import read, write
 
 
 def construct_supercell(unitcell, x_scaling, y_scaling, z_scaling):
+    """This funtion creates the supercells without a crack in them, ie just multiplies the
+       unitcells by a given amount and names the file accordingly.
+
+    Args:
+        unitcell (str): Name of the filename for the unitcell
+        x_scaling (int)
+        y_scaling (int)
+        z_scaling (int)
+
+    Returns:
+        str: The name of the supercell-file
+    """
     material_name = unitcell.split(".")[0]
     unitcell = read(f"Unitcells/{unitcell}")
     supercell = unitcell*(x_scaling, y_scaling, z_scaling)
@@ -12,6 +24,15 @@ def construct_supercell(unitcell, x_scaling, y_scaling, z_scaling):
     return filename
     
 def construct_crack(filename, custom_fracture, x_fracture, y_fracture, z_fracture):
+    """Takes the previously created supercells and adds a crack in them, then names them accordingly.
+
+    Args:
+        filename (str): Name of the supercell.
+        custom_fracture (bool): Not implemented yet.
+        x_fracture (list): Interval of atoms to remove in x-direction.
+        y_fracture (list): Interval of atoms to remove in y-direction.
+        z_fracture (list): Interval of atoms to remove in z-direction.
+    """
     if custom_fracture:
         return
     
@@ -19,7 +40,7 @@ def construct_crack(filename, custom_fracture, x_fracture, y_fracture, z_fractur
         supercell_lines = supercell.readlines()
     
     lines_to_remove = []
-    for line in supercell_lines[8:]:
+    for line in supercell_lines[8:]: #the coordinates start on line 8 in poscar-files
         if (x_fracture[0] <= float(line.split()[0]) <= x_fracture[1])\
         or (y_fracture[0] <= float(line.split()[1]) <= y_fracture[1])\
         or (z_fracture[0] <= float(line.split()[2]) <= z_fracture[1]):
@@ -31,7 +52,7 @@ def construct_crack(filename, custom_fracture, x_fracture, y_fracture, z_fractur
         except:
             pass
 
-    supercell_lines[6] = str(len(supercell_lines[8:])) + '\n'
+    supercell_lines[6] = str(len(supercell_lines[8:])) + '\n' #the number of atoms is always on line 6 in poscar-files
     new_filename = f"fractured_{filename}"
     final_build = open(new_filename, 'w')
     final_build.writelines(supercell_lines)
@@ -42,6 +63,11 @@ def delete_build(filename):
     os.remove(filename)
 
 def main(config):
+    """Takes in configs as dictionaries and creates simulation-cells from it
+
+    Args:
+        config (dict)
+    """
     try:
         os.mkdir("Supercells")
     except:
@@ -64,18 +90,3 @@ def main(config):
 
             supercell_filename = construct_supercell(unitcell, x_scaling, y_scaling, z_scaling)
             construct_crack(supercell_filename, custom_fracture, x_fracture, y_fracture, z_fracture)
-if __name__ == "__main__":
-    
-    config = {"vasp_files": ["Al.poscar"],
-                                "x_scalings": [2, 4, 8],
-                                "y_scalings": [10, 15, 25],
-                                "z_scalings": [5, 10, 15],
-                                "custom_fracture": False,
-                                "fracture": [[0.4, 0.6], [0.4, 0.6], [0.4, 0.6]],
-                                "temps": [0, 50, 300, 20],
-                                "stress_plane": "100",
-                                "t_interval": 5,
-                                "iterations": 1000}
-
-    main(config)
-
