@@ -37,5 +37,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run Tests
       run: |
-        python3 unittest.py
-        python3 inttest.py
+        python3 Tests/unittest.py
+        python3 Tests/inttest.py
