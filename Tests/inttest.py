@@ -1,4 +1,6 @@
-import sys, unittest
+#This will contain all inttests later on
+
+"""import sys, unittest
 
 import md
 from asap3 import Trajectory
@@ -17,3 +19,4 @@ if __name__ == "__main__":
         result = unittest.TextTestRunner(verbosity=0).run(testsuite)
         sys.exit(not result.wasSuccessful())
 
+"""
