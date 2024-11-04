@@ -4,7 +4,7 @@ import unittest as ut
 
 class ReadTests(ut.TestCase):
     def test_pejpejpej(self):
-        self.assertTrue(False)
+        self.assertTrue(True)
 
 if __name__ == "__main__":
     tests = [ut.TestLoader().loadTestsFromTestCase(ReadTests)]

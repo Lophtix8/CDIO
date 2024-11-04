@@ -3,7 +3,7 @@ import unittest as ut
 
 
 class BuildTests(ut.TestCase):
-    def test_1():
+    def test_1(self):
         self.assertTrue(True)
 
 if __name__ == "__main__":
