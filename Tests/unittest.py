@@ -63,7 +63,7 @@ class ConfigFileTests(unittest.TestCase):
             
 
 if __name__ == "__main__":
-	tests = [unittest.TestLoader().loadTestsFromTestCase(MdTests)]
+	tests = [unittest.TestLoader().loadTestsFromTestCase(ConfigFileTests)]
 	testsuite = unittest.TestSuite(tests)
 	result = unittest.TextTestRunner(verbosity=0).run(testsuite)
 	sys.exit(not result.wasSuccessful())
