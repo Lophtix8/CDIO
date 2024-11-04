@@ -9,6 +9,16 @@ def queue_job():
     return
 
 def write_job(lines: list[str], nodes: int = 1, cores:int = 32) -> str:
+    """
+    Writes a .q file to be run on the super computer.
+
+    Args:
+        lines (list): A list of lines in the template file.
+
+    Returns:
+        filepath (str): The resulting filepath. 
+
+    """
     num = 0
     file_path = f"temp_job_{num}.q"
 
