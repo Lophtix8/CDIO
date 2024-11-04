@@ -1,6 +1,5 @@
 import sys
 import unittest as ut
-import ~/CDIO/src/build
 
 
 class BuildTests(ut.TestCase):
