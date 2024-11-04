@@ -97,7 +97,7 @@ def check_data(config_data):
         # Remove invalid vasp files
         existing_files = []
         for file in config["vasp_files"]:
-            if not Path(file).exists():
+            if not Path(f"material_database/{file}").exists():
                 logger.warning("Removing file '" + file + "' from dictionary since it does not exist.") 
             else:
                 existing_files.append(file)
