@@ -11,7 +11,7 @@ class BuildTests(unittest.TestCase):
         self.assertTrue(True)
 
 if __name__ == "__main__":
-    tests = [unittest.TestLoader().loadTestsFromTestCase(MdTests)]
+    tests = [unittest.TestLoader().loadTestsFromTestCase(ReadTests)]
     testsuite = unittest.TestSuite(tests)
     result = unittest.TextTestRunner(verbosity=0).run(testsuite)
     sys.exit(not result.wasSuccessful())
