@@ -1,6 +1,6 @@
 import argparse
-from build import *
-from read_config import *
+import build
+import read_config
 #from md import * 
 
 
