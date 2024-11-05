@@ -3,6 +3,7 @@ from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase.md.verlet import VelocityVerlet
 from ase import units
 from asap3 import Trajectory
+import numpy as np
 
 def calcenergy(a):
     epot = a.get_potential_energy() / len(a)
@@ -39,7 +40,21 @@ def run_md(supercell_file, fractured = False):
     resultdata_file_name = "{file_name}.traj"
     traj = Trajectory(resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar')), "w", crystal)
     dyn.attach(traj.write, interval=10)
-    
+
+    # Define the strain rate and the number of strain steps
+    strain_rate = 0.01  # Strain increment per step
+    num_steps = 200  # Number of MD steps
+
+    # Function to incrementally apply strain in the z-direction
+    def apply_incremental_strain():
+        strain_matrix = np.eye(3)  # Identity matrix
+        strain_matrix[2, 2] += strain_rate  # Apply strain in z-direction
+        crystal.set_cell(crystal.cell @ strain_matrix, scale_atoms=True)  # Scale cell and atom positions
+
+    # Attach strain application to dynamics at every step
+    dyn.attach(apply_incremental_strain, interval=1)
+
+
     def printenergy(a=crystal):  # store a reference to atoms in the definition.
         """Function to print the potential, kinetic and total energy."""
         epot, ekin, int_T, etot = calcenergy(a)
