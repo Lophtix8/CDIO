@@ -47,15 +47,20 @@ def read_traj_file(traj_filename: str, pure: bool = False):
 
 	return traj_properties
 
-def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool = False, **kwargs: bool):
+def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool = False, **properties: bool) -> None:
 	"""
-	Creates plot(s) of parameters with respect to iteration.
+	Creates plot(s) of parameters with respect to iteration step.
+
+	Args:
+		traj_properties (dict): A dictionary of traj-file properties given by read_traj_file.
+		combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.
+		properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.
 	"""
 	
 	steps = range(len(traj_properties))
 	
 	plt.clf()
-	for parameter, include in kwargs.items():
+	for parameter, include in properties.items():
 		if include: # Check local bool variables temperature, ekin, epot, etot
 			y = []
 			for step in steps:
@@ -67,7 +72,7 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 				plt.savefig(parameter+".pdf")
 				plt.clf()
 	
-	if combined_plot and kwargs is not {}: 
+	if combined_plot and properties is not {}: 
 		plt.savefig("combined.pdf")
 
 if __name__ == "__main__":
