@@ -1,60 +1,56 @@
-"""Demonstrates molecular dynamics with constant energy."""
-
-from asap3 import Trajectory
-from ase import units
-#from ase.lattice.cubic import FaceCenteredCubic
+from ase.io import read
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase.md.verlet import VelocityVerlet
-from ase.io import read
-
-import os
+from ase import units
+from asap3 import Trajectory
 
 def calcenergy(a):
-	epot = a.get_potential_energy() / len(a)
-	ekin = a.get_kinetic_energy() / len(a)
-	int_T = ekin / (1.5 * units.kB)
-	etot = epot + ekin
-	return epot, ekin, int_T, etot
+    epot = a.get_potential_energy() / len(a)
+    ekin = a.get_kinetic_energy() / len(a)
+    int_T = ekin / (1.5 * units.kB)
+    etot = epot + ekin
+    return epot, ekin, int_T, etot
 
-def run_md(supercell_name):
-	# Use Asap for a huge performance increase if it is installed
-	use_asap = True
-	resultdata_file_name = "{file_name}.traj"
-	
+def run_md(supercell_file, fractured = False):
+    use_asap = True
+    
+    if fractured:
+        file_path = 'Fractured_supercells/'
+    else:
+        file_path = 'Supercells/'
+    
+    # Set up crystal
+    crystal = read(file_path + supercell_file)
+    
+    if use_asap:
+        from asap3 import EMT
+    else:
+        from ase.calculators.emt import EMT
+    
+    # Describe the interatomic interactions with the Effective Medium Theory
+    crystal.calc = EMT()
+    
+    # Set the momenta corresponding to T=300K
+    MaxwellBoltzmannDistribution(crystal, temperature_K=300)
+    
+    # We want to run MD with constant energy using the VelocityVerlet algorithm.
+    dyn = VelocityVerlet(crystal, 5 * units.fs)  # 5 fs time step.
+    
+    resultdata_file_name = "{file_name}.traj"
+    traj = Trajectory(resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar')), "w", crystal)
+    dyn.attach(traj.write, interval=10)
+    
+    def printenergy(a=crystal):  # store a reference to atoms in the definition.
+        """Function to print the potential, kinetic and total energy."""
+        epot, ekin, int_T, etot = calcenergy(a)
+        print('Energy per atom: Epot = %.3feV  Ekin = %.3feV (T=%3.0fK)'
+              'Etot = %.3feV' % (epot, ekin, int_T, etot))
+    
+    # Run the dynamics
+    dyn.attach(printenergy, interval=10)
+    printenergy()
+    dyn.run(200)
 
-	if use_asap:
-		from asap3 import EMT
-		size = 10
-	else:
-		from ase.calculators.emt import EMT
-		size = 3
-
-	# Set up a crystal
-	atoms = read('../material_database/' + supercell_name)
-
-	# Describe the interatomic interactions with the Effective Medium Theory
-	atoms.calc = EMT()
-
-	# Set the momenta corresponding to T=300K
-	MaxwellBoltzmannDistribution(atoms, temperature_K=300)
-
-	# We want to run MD with constant energy using the VelocityVerlet algorithm.
-	dyn = VelocityVerlet(atoms, 5 * units.fs)  # 5 fs time step.
  
-	traj = Trajectory(resultdata_file_name.format(file_name = supercell_name.removesuffix('.poscar')), "w", atoms)
-	dyn.attach(traj.write, interval=10)
-
-	def printenergy(a=atoms):  # store a reference to atoms in the definition.
-		"""Function to print the potential, kinetic and total energy."""
-		epot, ekin, int_T, etot = calcenergy(a)
-		print('Energy per atom: Epot = %.3feV  Ekin = %.3feV (T=%3.0fK)  '
-          		'Etot = %.3feV' % (epot, ekin, int_T, etot))
-
-
-	# Now run the dynamics
-	dyn.attach(printenergy, interval=10)
-	printenergy()
-	dyn.run(200)
-
 if __name__ == "__main__":
-	run_md('TiB2.poscar')
+	run_md('Al_5x10x5.poscar')
