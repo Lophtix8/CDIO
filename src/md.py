@@ -7,6 +7,8 @@ from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase.md.verlet import VelocityVerlet
 from ase.io import read
 
+import os
+
 def calcenergy(a):
 	epot = a.get_potential_energy() / len(a)
 	ekin = a.get_kinetic_energy() / len(a)
@@ -28,11 +30,7 @@ def run_md(supercell_name):
 		size = 3
 
 	# Set up a crystal
-	atoms = read(supercell_name)
-	#atoms = FaceCenteredCubic(directions=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
-    #    	                	symbol="Cu",
-    #    	                	size=(size, size, size),
-    #            	        	pbc=True)
+	atoms = read('../material_database/' + supercell_name)
 
 	# Describe the interatomic interactions with the Effective Medium Theory
 	atoms.calc = EMT()
@@ -42,6 +40,7 @@ def run_md(supercell_name):
 
 	# We want to run MD with constant energy using the VelocityVerlet algorithm.
 	dyn = VelocityVerlet(atoms, 5 * units.fs)  # 5 fs time step.
+ 
 	traj = Trajectory(resultdata_file_name.format(file_name = supercell_name.removesuffix('.poscar')), "w", atoms)
 	dyn.attach(traj.write, interval=10)
 
@@ -58,4 +57,4 @@ def run_md(supercell_name):
 	dyn.run(200)
 
 if __name__ == "__main__":
-	run_md('Al.poscar')
+	run_md('TiB2.poscar')
