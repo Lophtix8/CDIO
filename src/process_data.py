@@ -13,10 +13,20 @@ def process_data(traj_filename: str):
 	visualize(traj_properties, temperature=True)
 	return
 
-def read_traj_file(traj_filename: str, pure: bool = False):
+def read_traj_file(traj_filename: str) -> list[dict[str, float]]:
 	"""
 	Reads a trajectory file and returns a list of dictionaries containing the parameters, or the pure trajectory object.
 	Currently implemented properties include kinetic energy, potential energy, total energy and temperature.
+
+	Args:
+		traj_filename (str): The filename of the traj file
+
+	Returns:
+		traj_properties (list): A list of dictionaries. Each entry in the list contains the properties of that step. \n 
+		For example, the temperature at the 3rd step is located at: 
+		traj_properties[2][temperature] 
+		
+
 	"""
 	# This could possibly be changed to return relevant properties instead. I.e. read_traj_file("example.traj", temperature=True).
 	# Or to take the command line object as it's argument and manage that.
@@ -26,10 +36,6 @@ def read_traj_file(traj_filename: str, pure: bool = False):
 	
 	except:
 		raise Exception("Trajectory file not found.")
-
-	# If pure, simply return the traj argument.
-	if pure:
-		return traj
 
 	# If not pure, process the trajectory data.
 	traj_properties = []
