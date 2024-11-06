@@ -1,15 +1,20 @@
-import sys, unittest
-
+import sys, unittest, os
 from fracture_md import read_config
+import logging
+
+# logging for tests seems to happen without this.
+logging.disable(logging.CRITICAL)
 
 class ConfigFileTests(unittest.TestCase):
     
-    def test_get_config_data(self): 
-        config_data = read_config.get_config_data("config_test1.yaml")
+    def test_main(self):
+        # Maybe this test is not neccessary, or should be part of an integration test?
+        config_path = os.path.join(os.path.dirname(__file__), 'config_test.yaml')
+        config_data = read_config.main(config_path)
         self.assertTrue(isinstance(config_data, list))
         self.assertTrue(len(config_data) == 2)
+        self.assertTrue(isinstance(config_data[0], dict))
         self.assertTrue(isinstance(config_data[1], dict))
-        self.assertTrue(isinstance(config_data[2], dict))
         
     def test_check_data(self):
         data = [{"vasp_files": ["copper.vasp", "copper2.vasp"], "x_scalings": [5, 10, 15],
@@ -37,4 +42,3 @@ if __name__ == "__main__":
 	testsuite = unittest.TestSuite(tests)
 	result = unittest.TextTestRunner(verbosity=0).run(testsuite)
 	sys.exit(not result.wasSuccessful())
-	main()

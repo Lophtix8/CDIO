@@ -2,10 +2,11 @@ import sys
 import yaml
 import argparse
 from pathlib import Path
-from config_logger import logger
+import logging
 
+logger = logging.getLogger(__name__)
 
-def get_config_data(config_file):
+def main(config_file):
     """The main function of the program. It reads the config file and creates
     a list for the dictionaries that will contain the config data.
     
@@ -19,24 +20,25 @@ def get_config_data(config_file):
     try:
         file = open(config_file)
     except:
-        logger.error("Config file does not exist, exiting the program")
+        logger.error("Config file does not exist, exiting the program.")
         sys.exit(1)
     
-    logger.info("Loading config file...")
-    try:  
+    try: 
+        logger.info("Loading config file...")
         config_data = yaml.safe_load(file)
     except:
         logger.error("Could not load config file, exiting the program.")
         sys.exit(1)
         
     try:
+        logger.info("Checking data in config file...")
         config_data = check_data(config_data)
     except (ValueError, TypeError) as e: 
         logger.error(f"An error was found: {e}, exiting the program.")
         sys.exit(1)
         
-    logger.info("Done!")
-    print(config_data)
+    logger.info("Checking config data complete!")
+    
     return config_data
 
 def check_data(config_data):
@@ -49,9 +51,7 @@ def check_data(config_data):
         config_data (list): A possible modification of the input config_data.
     """
     
-    # More fail-safe checks can be added like checking that all datatypes are correct.
-    
-    logger.info("Checking data in config file...")
+    # More fail-safe checks can be added.
     
     keys_to_check = {"vasp_files", "x_scalings", "y_scalings", "z_scalings",
                      "custom_fracture", "fracture", "temps", "stress_plane", "t_interval",
@@ -131,4 +131,4 @@ if __name__ == "__main__":
     parser.add_argument('config_file', type=str)
     args = parser.parse_args()
     config_file = args.config_file
-    get_config_data(config_file)
+    main(config_file)
