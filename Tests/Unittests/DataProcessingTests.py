@@ -6,7 +6,7 @@ import fracture_md.process_data as pd
 class DataProcessingTests(ut.TestCase):
     curr_dir = os.path.dirname(__file__)
     def test_read_traj(self):
-        traj_file = os.path.join(traj_file, '..', 'Tests', "cu.traj")
+        traj_file = os.path.join(self.curr_dir, '..', 'ExampleFiles', "cu.traj")
         traj_data = pd.read_traj_file(traj_file)
         
         temp = traj_data[0]["temperature"]
@@ -15,7 +15,8 @@ class DataProcessingTests(ut.TestCase):
         self.assertTrue((temp-300)/300 < 0.05)
 
     def test_graph_creator(self):
-        traj_file = os.path.join(traj_file, '..', 'Tests', "cu.traj")
+        traj_file = os.path.join(self.curr_dir, '..', 'ExampleFiles', "cu.traj")
+        print(traj_file)
         traj_data = pd.read_traj_file(traj_file)
         
         pd.visualize(traj_data, temperature=True, ekin=True)
@@ -24,7 +25,10 @@ class DataProcessingTests(ut.TestCase):
         self.assertTrue(os.path.exists("temperature.pdf"))
         self.assertTrue(os.path.exists("ekin.pdf"))
         self.assertTrue(os.path.exists("combined.pdf"))
-        
+
+        os.remove("temperature.pdf")
+        os.remove("ekin.pdf")
+        os.remove("combined.pdf")        
 
 if __name__ == "__main__":
     tests = [ut.TestLoader().loadTestsFromTestCase(DataProcessingTests)]
