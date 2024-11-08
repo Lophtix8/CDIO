@@ -1,6 +1,6 @@
 import sys, os
 import unittest as ut
-import src.process_data as pd
+import fracture_md.process_data as pd
 
 
 class DataProcessingTests(ut.TestCase):
