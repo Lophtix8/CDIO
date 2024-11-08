@@ -25,6 +25,11 @@ def read_traj_file(traj_filename: str) -> list[dict[str, float]]:
 		traj_properties (list): A list of dictionaries. Each entry in the list contains the properties of that step. \n 
 		For example, the temperature at the 3rd step is located at: 
 		traj_properties[2][temperature] 
+<<<<<<< HEAD:fracture_md/process_data.py
+=======
+		
+
+>>>>>>> b494d214a83eacad85a8f0b973a383259aa9ef8d:src/process_data.py
 	"""
 	# This could possibly be changed to return relevant properties instead. I.e. read_traj_file("example.traj", temperature=True).
 	# Or to take the command line object as it's argument and manage that.
