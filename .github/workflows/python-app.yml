@@ -28,6 +28,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest wheel numpy==1.26.4 scipy ase
         pip install asap3
+        pip install .
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
@@ -37,5 +38,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run Tests
       run: |
-        python3 Tests/unittest.py
-        python3 Tests/inttest.py
+        python3 Tests/Unittests/unittests.py
+        python3 Tests/Inttests/inttests.py

@@ -13,10 +13,23 @@ def process_data(traj_filename: str):
 	visualize(traj_properties, temperature=True)
 	return
 
-def read_traj_file(traj_filename: str, pure: bool = False):
+def read_traj_file(traj_filename: str) -> list[dict[str, float]]:
 	"""
 	Reads a trajectory file and returns a list of dictionaries containing the parameters, or the pure trajectory object.
 	Currently implemented properties include kinetic energy, potential energy, total energy and temperature.
+
+	Args:
+		traj_filename (str): The filename of the traj file
+
+	Returns:
+		traj_properties (list): A list of dictionaries. Each entry in the list contains the properties of that step. \n 
+		For example, the temperature at the 3rd step is located at: 
+		traj_properties[2][temperature] 
+<<<<<<< HEAD:fracture_md/process_data.py
+=======
+		
+
+>>>>>>> b494d214a83eacad85a8f0b973a383259aa9ef8d:src/process_data.py
 	"""
 	# This could possibly be changed to return relevant properties instead. I.e. read_traj_file("example.traj", temperature=True).
 	# Or to take the command line object as it's argument and manage that.
@@ -26,10 +39,6 @@ def read_traj_file(traj_filename: str, pure: bool = False):
 	
 	except:
 		raise Exception("Trajectory file not found.")
-
-	# If pure, simply return the traj argument.
-	if pure:
-		return traj
 
 	# If not pure, process the trajectory data.
 	traj_properties = []
@@ -47,15 +56,20 @@ def read_traj_file(traj_filename: str, pure: bool = False):
 
 	return traj_properties
 
-def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool = False, **kwargs: bool):
+def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool = False, **properties: bool) -> None:
 	"""
-	Creates plot(s) of parameters with respect to iteration.
+	Creates plot(s) of parameters with respect to iteration step.
+
+	Args:
+		traj_properties (dict): A dictionary of traj-file properties given by read_traj_file.
+		combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.
+		properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.
 	"""
 	
 	steps = range(len(traj_properties))
 	
 	plt.clf()
-	for parameter, include in kwargs.items():
+	for parameter, include in properties.items():
 		if include: # Check local bool variables temperature, ekin, epot, etot
 			y = []
 			for step in steps:
@@ -67,7 +81,7 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 				plt.savefig(parameter+".pdf")
 				plt.clf()
 	
-	if combined_plot and kwargs is not {}: 
+	if combined_plot and properties is not {}: 
 		plt.savefig("combined.pdf")
 
 if __name__ == "__main__":
