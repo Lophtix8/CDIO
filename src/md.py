@@ -5,6 +5,8 @@ from ase import units
 from asap3 import Trajectory
 import numpy as np
 
+
+
 def calcenergy(a):
     epot = a.get_potential_energy() / len(a)
     ekin = a.get_kinetic_energy() / len(a)
@@ -12,38 +14,36 @@ def calcenergy(a):
     etot = epot + ekin
     return epot, ekin, int_T, etot
 
-def run_md(supercell_file, fractured = False):
-    use_asap = True
+def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
+    """This function runs a molecular dynamics simulation and deposits the result in the 
+    folder named "Simulation_results".
     
-    if fractured:
-        file_path = 'Fractured_supercells/'
-    else:
-        file_path = 'Supercells/'
+    Args:
+        supercell_file (str): Name of the filename for the supercell
+        temp (float): Set temperature in Kelvin for the simulation.
+        num_steps (int): Number of simulation steps.
+        strain_rate (int): Strain rate
+
+    """
     
+    from asap3 import EMT
+    file_path = 'Supercells/'
+        
     # Set up crystal
     crystal = read(file_path + supercell_file)
-    
-    if use_asap:
-        from asap3 import EMT
-    else:
-        from ase.calculators.emt import EMT
     
     # Describe the interatomic interactions with the Effective Medium Theory
     crystal.calc = EMT()
     
     # Set the momenta corresponding to T=300K
-    MaxwellBoltzmannDistribution(crystal, temperature_K=300)
+    MaxwellBoltzmannDistribution(crystal, temperature_K=temp)
     
     # We want to run MD with constant energy using the VelocityVerlet algorithm.
     dyn = VelocityVerlet(crystal, 5 * units.fs)  # 5 fs time step.
     
     resultdata_file_name = "{file_name}.traj"
-    traj = Trajectory(resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar')), "w", crystal)
+    traj = Trajectory('Simulation_results/' + resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar')), "w", crystal)
     dyn.attach(traj.write, interval=10)
-
-    # Define the strain rate and the number of strain steps
-    strain_rate = 0.01  # Strain increment per step
-    num_steps = 200  # Number of MD steps
 
     # Function to incrementally apply strain in the z-direction
     def apply_incremental_strain():
@@ -64,8 +64,8 @@ def run_md(supercell_file, fractured = False):
     # Run the dynamics
     dyn.attach(printenergy, interval=10)
     printenergy()
-    dyn.run(200)
+    dyn.run(num_steps)
 
  
-if __name__ == "__main__":
-	run_md('Al_5x10x5.poscar')
+#if __name__ == "__main__":
+#	run_md('Al_10x20x10.poscar',  300, 100, 0.01)
