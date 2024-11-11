@@ -17,10 +17,12 @@ def construct_supercell(unitcell, x_scaling, y_scaling, z_scaling):
     """
     material_name = unitcell.split(".")[0]
     try:
-        unitcell = read(f"material_database/{unitcell}")
+        unitcell = read(f"{unitcell}")
+        
     except FileNotFoundError:
         print(f"{unitcell} is not in the material database.")
         return False
+    return("Success")
     supercell = unitcell*(x_scaling, y_scaling, z_scaling)
     filename = f"{material_name}_{x_scaling}x{y_scaling}x{z_scaling}.poscar" 
     write(filename, supercell, format="vasp", sort=True, direct=True)
@@ -97,3 +99,5 @@ def main(config):
                 construct_crack(supercell_filename, custom_fracture, x_fracture, y_fracture, z_fracture)
             else:
                 continue
+
+print(construct_supercell("test.poscar",1,1,1))

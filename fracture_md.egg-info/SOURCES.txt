@@ -3,7 +3,6 @@ README.md
 setup.py
 fracture_md/__init__.py
 fracture_md/build.py
-fracture_md/config_logger.py
 fracture_md/main.py
 fracture_md/md.py
 fracture_md/process_data.py
