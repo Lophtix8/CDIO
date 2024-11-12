@@ -3,14 +3,15 @@ import os
 def queue_job():
 	
     template = get_template("template.q")
-    job = write_job(template)
-    
+    job = write_job(template)    
 
     return
 
 def write_job(lines: list[str], nodes: int = 1, cores:int = 32) -> str:
     num = 0
-    file_path = f"temp_job_{num}.q"
+    
+    curr_dir = os.path.dirname(__file__)
+    file_path = os.path.join(curr_dir, f"temp_job_{num}.q")
 
     # Check that file name isn't already used
     while(os.path.isfile(file_path)):
