@@ -1,6 +1,10 @@
 import os
 from ase.io import read, write
+from os.path import abspath, dirname
+import shutil
 
+
+DIR_NAME = dirname(abspath(__file__))
 
 def construct_supercell(unitcell, x_scaling, y_scaling, z_scaling):
     """This funtion creates the supercells without a crack in them, ie just multiplies the
@@ -16,13 +20,12 @@ def construct_supercell(unitcell, x_scaling, y_scaling, z_scaling):
         str: The name of the supercell-file
     """
     material_name = unitcell.split(".")[0]
+    
     try:
-        unitcell = read(f"{unitcell}")
-        
+        unitcell = read(f"{DIR_NAME}/material_database/{unitcell}")
     except FileNotFoundError:
-        print(f"{unitcell} is not in the material database.")
         return False
-    return("Success")
+    
     supercell = unitcell*(x_scaling, y_scaling, z_scaling)
     filename = f"{material_name}_{x_scaling}x{y_scaling}x{z_scaling}.poscar" 
     write(filename, supercell, format="vasp", sort=True, direct=True)
@@ -99,5 +102,3 @@ def main(config):
                 construct_crack(supercell_filename, custom_fracture, x_fracture, y_fracture, z_fracture)
             else:
                 continue
-
-print(construct_supercell("test.poscar",1,1,1))
