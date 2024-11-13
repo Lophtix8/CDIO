@@ -1,6 +1,7 @@
 import sys
 import yaml
 import argparse
+import os
 from pathlib import Path
 import logging
 
@@ -91,13 +92,15 @@ def check_data(config_data):
         # Check so that fracture has exactly three intervals. 
         if not config["custom_fracture"] and len(config["fracture"]) != 3:
             logger.error("fracture should have three dimensions.")
-            raise ValueError
+            raise 
             
         
         # Remove invalid vasp files
         existing_files = []
         for file in config["vasp_files"]:
-            if not Path(f"material_database/{file}").exists():
+            curr_dir = os.path.dirname(__file__)
+            dest_path = os.path.join(curr_dir, f"material_database/{file}")
+            if not Path(dest_path).exists():
                 logger.warning("Removing file '" + file + "' from dictionary since it does not exist.") 
             else:
                 existing_files.append(file)
