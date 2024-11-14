@@ -9,20 +9,25 @@ from fracture_md import build, read_config
 logger = logging.getLogger(__name__)
 
 def prepare_and_queue(conf_path : str):
-    prepare_jobs(conf_path)
-    queue_jobs()
+    job_paths = prepare_jobs(conf_path)
+    queue_jobs(job_paths)
 
-def queue_jobs(job_path : str = ''):
+def queue_jobs(job_paths : list[str] = []):
+    for job_path in job_paths:
+        print(f"quueing: {job_path}")
+        #os.system(f"sbatch {job_path}")
     pass
 
 def prepare_jobs(conf_path : str):
+    job_paths = []
     sim_data = read_config.main(conf_path)
     for config in sim_data:
         poscar_paths = build.main(config)
         for poscar_paths in poscar_paths['fractured'].keys():
-            create_job(config, poscar_paths)
+            job_paths.extend(create_jobs(config, poscar_paths))
+    return job_paths
 
-def create_job(config : list, poscar_filepath : str):
+def create_jobs(config : list, poscar_filepath : str):
     
     curr_dir = os.path.dirname(__file__)
     template = get_template(f"{curr_dir}/template.q")
@@ -46,6 +51,8 @@ def create_job(config : list, poscar_filepath : str):
     
     os.system(f"mv {poscar_filepath} {crystal_path}")
     
+    job_paths = []
+
     for temp in temps:
         job_path = os.path.join(crystal_path, str(temp)+"K")
         if not os.path.exists(job_path):
@@ -60,9 +67,10 @@ def create_job(config : list, poscar_filepath : str):
         
         with open(config_filepath, 'w') as file:
             yaml.dump(temp_conf, file, default_flow_style=None)
-        write_job(template, dest_path, config_filepath)
+        job_path = write_job(template, dest_path, config_filepath)
+        job_paths.append(job_path)
 
-    return
+    return job_paths
 
 def write_job(lines: list[str], poscar_filepath : str, config_filepath : str, nodes: int = 1, cores:int = 32) -> str:
     num = 0
@@ -142,4 +150,4 @@ def get_crystal_name(poscar_filepath : str):
     return ''.join(species_list)
 
 if __name__ == "__main__": 
-    create_job()
+    create_jobs()
