@@ -1,40 +1,36 @@
-import argparse
-import build
-import read_config
-import logging
-import logging.config
-import md
-from os.path import dirname, abspath
-import os
-#from md import * 
+import job_manager
 
+
+def prompt_user(): 
+    which_config = input("Which config-file to run?")
+    type_of_job = input("Only prepare jobs (1), queue prepared jobs (2) or prepare and queue simulations (3)")
+    return which_config, type_of_job
+
+def prepare_jobs(config):
+    job_manager.prepare_jobs(config)
+
+def queue_jobs():
+    job_manager.queue_jobs()
+
+def prepare_and_queue(config):
+    job_manager.prepare_jobs(config)
+    job_manager.queue_jobs()
+    
 def main():
-    logging.config.fileConfig('logging.conf')
+    config, type_of_job = prompt_user()
     
-    logger = logging.getLogger(__name__)
+    if type_of_job == "1":
+        prepare_jobs(config)
     
-    # Name of config file is needed when program is run from terminal.
-    parser = argparse.ArgumentParser()
-    parser.add_argument('config_file', type=str)
-    args = parser.parse_args()
-    config_file = args.config_file
+    elif type_of_job == "2":
+        queue_jobs()
     
-    logger.info("Running read_config...")
+    elif type_of_job == "3":
+        prepare_and_queue(config)
     
-    sim_data = read_config.main(config_file)
-    
-    logger.info("Running build with config data...")
-    
-    for config in sim_data:
-        build.main(config)
-    
-    sim_queue = f"{dirname(abspath(__file__))}/Fractured_supercells"
-    for file in os.listdir(sim_queue):
-        try:
-            md.run_md(file, 300, 100, 0.01)
-        except:
-            print("I am stuck here")
-            continue
+    else:
+        print("Invalid option, exiting")
+        return
 
 if __name__ == "__main__":
     main()
