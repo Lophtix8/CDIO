@@ -4,7 +4,7 @@ from ase.md.verlet import VelocityVerlet
 from ase import units
 from asap3 import Trajectory
 import numpy as np
-
+from os.path import dirname, abspath
 
 
 def calcenergy(a):
@@ -27,7 +27,7 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
     """
     
     from asap3 import EMT
-    file_path = 'Supercells/'
+    file_path = f"{dirname(abspath(__file__))}/Fractured_supercells/"
         
     # Set up crystal
     crystal = read(file_path + supercell_file)

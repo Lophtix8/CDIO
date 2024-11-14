@@ -8,14 +8,3 @@
   stress_plane: "010"
   iterations: 1000
   t_interval: 5
-
-- vasp_files: [SiC.poscar]
-  x_scalings: [2, 4, 8]
-  y_scalings: [10, 10, 10]
-  z_scalings: [5, 15, 20]
-  custom_fracture: false
-  fracture: [[0, 1], [0, 0.5], [0.4, 0.6]]
-  temps: [0, 300, 20]
-  stress_plane: "100"
-  t_interval: 5
-  iterations: 1000

@@ -3,6 +3,9 @@ import build
 import read_config
 import logging
 import logging.config
+import md
+from os.path import dirname, abspath
+import os
 #from md import * 
 
 def main():
@@ -24,9 +27,14 @@ def main():
     
     for config in sim_data:
         build.main(config)
-
-    #run_md()
-    #delete_build()
+    
+    sim_queue = f"{dirname(abspath(__file__))}/Fractured_supercells"
+    for file in os.listdir(sim_queue):
+        try:
+            md.run_md(file, 300, 100, 0.01)
+        except:
+            print("I am stuck here")
+            continue
 
 if __name__ == "__main__":
     main()
