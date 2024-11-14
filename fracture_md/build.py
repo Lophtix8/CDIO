@@ -1,4 +1,4 @@
-import os
+import os, shutil
 from ase.io import read, write
 
 
@@ -16,15 +16,18 @@ def construct_supercell(unitcell, x_scaling, y_scaling, z_scaling):
         str: The name of the supercell-file
     """
     material_name = unitcell.split(".")[0]
+
+    curr_dir = os.path.dirname(__file__)
+
     try:
-        unitcell = read(f"material_database/{unitcell}")
+        unitcell = read(os.path.join(curr_dir, f"material_database/{unitcell}"))
     except FileNotFoundError:
         print(f"{unitcell} is not in the material database.")
         return False
     supercell = unitcell*(x_scaling, y_scaling, z_scaling)
     filename = f"{material_name}_{x_scaling}x{y_scaling}x{z_scaling}.poscar" 
     write(filename, supercell, format="vasp", sort=True, direct=True)
-    os.system(f"mv {filename} Supercells")
+    os.system(f"mv {filename} {curr_dir}/Supercells")
     return filename
     
 def construct_crack(filename, custom_fracture, x_fracture, y_fracture, z_fracture):
@@ -37,10 +40,12 @@ def construct_crack(filename, custom_fracture, x_fracture, y_fracture, z_fractur
         y_fracture (list): Interval of atoms to remove in y-direction.
         z_fracture (list): Interval of atoms to remove in z-direction.
     """
+    curr_dir = os.path.dirname(__file__)
+
     if custom_fracture:
         return
     
-    with open(f"Supercells/{filename}") as supercell:
+    with open(os.path.join(curr_dir, f"Supercells/{filename}")) as supercell:
         supercell_lines = supercell.readlines()
     
     lines_to_remove = []
@@ -61,7 +66,7 @@ def construct_crack(filename, custom_fracture, x_fracture, y_fracture, z_fractur
     final_build = open(new_filename, 'w')
     final_build.writelines(supercell_lines)
     final_build.close()
-    os.system(f"mv {new_filename} Fractured_supercells")
+    shutil.move(f"{new_filename}", f"{curr_dir}/Fractured_supercells")
     
 def delete_build(filename):
     os.remove(filename)
@@ -72,14 +77,18 @@ def main(config):
     Args:
         config (dict)
     """
+    curr_dir = os.path.dirname(__file__)
+
     try:
-        os.mkdir("Supercells")
+        os.mkdir(f"{curr_dir}/Supercells")
     except:
         pass
     try:
-        os.mkdir("Fractured_supercells")
+        os.mkdir(f"{curr_dir}/Fractured_supercells")
     except:
         pass
+
+    file_paths = {'fractured' : {}, 'unfractured' : {}}
 
     for unitcell in config["vasp_files"]:
         for supercell_number in range(len(config["x_scalings"])):
@@ -95,5 +104,13 @@ def main(config):
             supercell_filename = construct_supercell(unitcell, x_scaling, y_scaling, z_scaling)
             if supercell_filename:
                 construct_crack(supercell_filename, custom_fracture, x_fracture, y_fracture, z_fracture)
+                
+                curr_dir = os.path.dirname(__file__)
+                fractured_supercell_filepath = os.path.join(curr_dir,"Fractured_supercells", f'fractured_{supercell_filename}')
+                supercell_filepath = os.path.join(curr_dir,"Supercells", supercell_filename)
+                file_paths['unfractured'][supercell_filepath] = config
+                file_paths['fractured'][fractured_supercell_filepath] = config
             else:
                 continue
+
+    return file_paths
