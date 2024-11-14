@@ -27,7 +27,7 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
     """
     
     from asap3 import EMT
-    file_path = f"{dirname(abspath(__file__))}/Fractured_supercells/"
+    file_path = f"{dirname(abspath(__file__))}/jobs/"
         
     # Set up crystal
     crystal = read(file_path + supercell_file)
@@ -41,8 +41,11 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
     # We want to run MD with constant energy using the VelocityVerlet algorithm.
     dyn = VelocityVerlet(crystal, 5 * units.fs)  # 5 fs time step.
     
-    resultdata_file_name = "{file_name}.traj"
-    traj = Trajectory('Simulation_results/' + resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar')), "w", crystal)
+    #resultdata_file_name = "{file_name}.traj"
+    #traj = Trajectory('Simulation_results/' + resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar')), "w", crystal)
+    
+    resultdata_file_name = f"{supercell_file.split('/')[-1].split('.')[0]}_{int(temp)}K.traj"
+    traj = Trajectory('Simulation_results/' + resultdata_file_name, "w", crystal)
     dyn.attach(traj.write, interval=10)
 
     # Function to incrementally apply strain in the z-direction

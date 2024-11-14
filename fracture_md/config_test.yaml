@@ -1,10 +1,10 @@
 - vasp_files: [Al.poscar, Al2O3.poscar]
-  x_scalings: [5, 10, 15]
-  y_scalings: [10, 20, 10]
-  z_scalings: [5, 10, 15]
+  x_scalings: [5, 4]
+  y_scalings: [7, 6]
+  z_scalings: [5, 3]
   custom_fracture: false
   fracture: [[0, 1], [0, 0.5], [0.4, 0.6]]
-  temps: [0, 50, 300]
+  temps: [0, 300]
   stress_plane: "010"
   iterations: 1000
   t_interval: 5
