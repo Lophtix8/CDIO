@@ -14,8 +14,7 @@ def prepare_and_queue(conf_path : str):
 
 def queue_jobs(job_paths : list[str] = []):
     for job_path in job_paths:
-        print(f"quueing: {job_path}")
-        #os.system(f"sbatch {job_path}")
+        os.system(f"bash {job_path}")
     pass
 
 def prepare_jobs(conf_path : str):
@@ -76,14 +75,20 @@ def write_job(lines: list[str], poscar_filepath : str, config_filepath : str, no
     num = 0
     
     job_dir = os.path.dirname(config_filepath)
-    file_path = os.path.join(job_dir, f"temp_job_{num}.q")
+    #file_path = os.path.join(job_dir, f"temp_job_{num}.q")
+    file_path = os.path.join(job_dir, f"temp_job_{num}.sh")
 
     # Check that file name isn't already used
     while(os.path.isfile(file_path)):
         num += 1
-        file_path = os.path.join(job_dir, f"temp_job_{num}.q")
+        #file_path = os.path.join(job_dir, f"temp_job_{num}.q")
+        file_path = os.path.join(job_dir, f"temp_job_{num}.sh")
     
     job_file = open(file_path, 'w')
+    ###
+    job_file.write("#!/bin/bash\n")
+    ###
+    """
     for line in lines:
         parts = line.split()
         
@@ -101,7 +106,7 @@ def write_job(lines: list[str], poscar_filepath : str, config_filepath : str, no
 
         output = ' '.join(parts)+"\n"
         job_file.write(output)
-
+    """
     curr_dir = os.path.dirname(__file__)
     job_file.write (f"python3 {curr_dir}/md.py {poscar_filepath} {config_filepath}")
     

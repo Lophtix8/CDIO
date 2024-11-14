@@ -45,7 +45,7 @@ def run_md(supercell_path: str, temp: float, num_steps: int, strain_rate: int):
     dest_path = os.path.dirname(supercell_path) + "/Simulation_results/"
     os.makedirs(dest_path, exist_ok=True)
     resultdata_file_name = "{file_name}.traj"
-    traj = Trajectory(dest_path + resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar')), "w", crystal)
+    traj = Trajectory(dest_path + resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar') + f"_{temp}K"), "w", crystal)
     dyn.attach(traj.write, interval=10)
 
     # Function to incrementally apply strain in the z-direction
@@ -74,8 +74,14 @@ if __name__ == "__main__":
     poscar_path = sys.argv[1]
     config_path = sys.argv[2]
 
-    config_data = read_config.main(config_path)
-
+    config_data = {}
+    with open(config_path, 'r') as file:
+        config_data = yaml.safe_load(file)
+        file.close()
+    print(config_data)
     temp = config_data['temps']
+    print(poscar_path)
+    print(config_path)
+    print(temp)
     
     run_md(poscar_path, temp, 100, 0.01)
