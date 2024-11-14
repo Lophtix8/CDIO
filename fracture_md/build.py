@@ -88,7 +88,7 @@ def main(config):
     except:
         pass
 
-    file_paths = {}
+    file_paths = {'fractured' : {}, 'unfractured' : {}}
 
     for unitcell in config["vasp_files"]:
         for supercell_number in range(len(config["x_scalings"])):
@@ -108,8 +108,8 @@ def main(config):
                 curr_dir = os.path.dirname(__file__)
                 fractured_supercell_filepath = os.path.join(curr_dir,"Fractured_supercells", f'fractured_{supercell_filename}')
                 supercell_filepath = os.path.join(curr_dir,"Supercells", supercell_filename)
-                file_paths[supercell_filepath] = config
-                file_paths[fractured_supercell_filepath] = config
+                file_paths['unfractured'][supercell_filepath] = config
+                file_paths['fractured'][fractured_supercell_filepath] = config
             else:
                 continue
 
