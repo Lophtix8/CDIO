@@ -43,6 +43,7 @@ def run_md(supercell_path: str, temp: float, num_steps: int, strain_rate: int):
     dyn = VelocityVerlet(crystal, 5 * units.fs)  # 5 fs time step.
     
     dest_path = os.path.dirname(supercell_path) + "/Simulation_results/"
+    os.makedirs(dest_path, exist_ok=True)
     resultdata_file_name = "{file_name}.traj"
     traj = Trajectory(dest_path + resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar')), "w", crystal)
     dyn.attach(traj.write, interval=10)
