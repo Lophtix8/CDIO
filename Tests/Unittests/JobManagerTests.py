@@ -8,10 +8,7 @@ class JobQueuerTests(ut.TestCase):
     poscar_path = os.path.join(conf_path, "..", "Fractured_supercells", "fractured")
 
     sim_data = read_config.main(conf_path)
-    for config in sim_data:
-        file_names = build.main(config)
-        for file_name in file_names.keys():
-            job_manager.create_job(config, file_name)
+    job_manager.prepare_and_queue(conf_path)
 
 if __name__ == "__main__":
     tests = [ut.TestLoader().loadTestsFromTestCase(JobQueuerTests)]
