@@ -2,9 +2,25 @@ import os
 import logging
 import copy
 import yaml
-from ase import formula as formula
+from ase import formula
+
+from fracture_md import build, read_config
 
 logger = logging.getLogger(__name__)
+
+def prepare_and_queue(conf_path : str):
+    prepare_jobs(conf_path)
+    queue_jobs()
+
+def queue_jobs(job_path : str = ''):
+    pass
+
+def prepare_jobs(conf_path : str):
+    sim_data = read_config.main(conf_path)
+    for config in sim_data:
+        poscar_paths = build.main(config)
+        for poscar_paths in poscar_paths['fractured'].keys():
+            create_job(config, poscar_paths)
 
 def create_job(config : list, poscar_filepath : str):
     
