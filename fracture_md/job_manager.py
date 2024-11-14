@@ -6,7 +6,7 @@ from ase import formula as formula
 
 logger = logging.getLogger(__name__)
 
-def queue_job(config : list, poscar_filepath : str):
+def create_job(config : list, poscar_filepath : str):
     
     curr_dir = os.path.dirname(__file__)
     template = get_template(f"{curr_dir}/template.q")
@@ -126,4 +126,4 @@ def get_crystal_name(poscar_filepath : str):
     return ''.join(species_list)
 
 if __name__ == "__main__": 
-    queue_job()
+    create_job()

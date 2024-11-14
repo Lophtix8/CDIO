@@ -1,6 +1,6 @@
 import sys, os
 import unittest as ut
-from fracture_md import read_config, job_queuer, build
+from fracture_md import read_config, job_manager, build
 
 class JobQueuerTests(ut.TestCase):
     curr_dir = os.path.dirname(__file__)
@@ -11,7 +11,7 @@ class JobQueuerTests(ut.TestCase):
     for config in sim_data:
         file_names = build.main(config)
         for file_name in file_names.keys():
-            job_queuer.queue_job(config, file_name)
+            job_manager.create_job(config, file_name)
 
 if __name__ == "__main__":
     tests = [ut.TestLoader().loadTestsFromTestCase(JobQueuerTests)]
