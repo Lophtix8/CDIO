@@ -1,4 +1,4 @@
-import os
+import os, shutil
 from ase.io import read, write
 
 
@@ -66,7 +66,7 @@ def construct_crack(filename, custom_fracture, x_fracture, y_fracture, z_fractur
     final_build = open(new_filename, 'w')
     final_build.writelines(supercell_lines)
     final_build.close()
-    os.system(f"mv {new_filename} {curr_dir}/Fractured_supercells")
+    shutil.move(f"{new_filename}", f"{curr_dir}/Fractured_supercells")
     
 def delete_build(filename):
     os.remove(filename)

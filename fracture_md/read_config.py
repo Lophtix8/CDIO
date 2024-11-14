@@ -92,7 +92,7 @@ def check_data(config_data):
         # Check so that fracture has exactly three intervals. 
         if not config["custom_fracture"] and len(config["fracture"]) != 3:
             logger.error("fracture should have three dimensions.")
-            raise 
+            raise ValueError
             
         
         # Remove invalid vasp files
