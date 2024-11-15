@@ -8,8 +8,8 @@ from fracture_md import build, read_config
 
 logger = logging.getLogger(__name__)
 
-def prepare_and_queue(conf_path : str):
-    job_paths = prepare_jobs(conf_path)
+def prepare_and_queue(conf_path : str, fractured=True, unfractured=False):
+    job_paths = prepare_jobs(conf_path, fractured=fractured, unfractured=unfractured)
     queue_jobs(job_paths)
 
 def queue_jobs(job_paths : list[str] = []):
@@ -17,13 +17,20 @@ def queue_jobs(job_paths : list[str] = []):
         os.system(f"bash {job_path}")
     pass
 
-def prepare_jobs(conf_path : str):
+def prepare_jobs(conf_path : str, fractured=True, unfractured=False):
     job_paths = []
     sim_data = read_config.main(conf_path)
     for config in sim_data:
         poscar_paths = build.main(config)
-        for poscar_paths in poscar_paths['fractured'].keys():
-            job_paths.extend(create_jobs(config, poscar_paths))
+        
+        if fractured:
+            for poscar_paths in poscar_paths['fractured'].keys():
+                job_paths.extend(create_jobs(config, poscar_paths))
+
+        if unfractured:
+            for poscar_paths in poscar_paths['unfractured'].keys():
+                job_paths.extend(create_jobs(config, poscar_paths))
+
     return job_paths
 
 def create_jobs(config : list, poscar_filepath : str):
