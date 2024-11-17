@@ -2,6 +2,7 @@ import os
 import logging
 import copy
 import yaml
+import shutil
 from ase import formula
 
 from fracture_md import build, read_config
@@ -24,12 +25,12 @@ def prepare_jobs(conf_path : str, fractured=True, unfractured=False):
         poscar_paths = build.main(config)
         
         if fractured:
-            for poscar_paths in poscar_paths['fractured'].keys():
-                job_paths.extend(create_jobs(config, poscar_paths))
+            for poscar_path in poscar_paths['fractured'].keys():
+                job_paths.extend(create_jobs(config, poscar_path))
 
         if unfractured:
-            for poscar_paths in poscar_paths['unfractured'].keys():
-                job_paths.extend(create_jobs(config, poscar_paths))
+            for poscar_path in poscar_paths['unfractured'].keys():
+                job_paths.extend(create_jobs(config, poscar_path))
 
     return job_paths
 
@@ -38,16 +39,13 @@ def create_jobs(config : list, poscar_filepath : str):
     curr_dir = os.path.dirname(__file__)
     template = get_template(f"{curr_dir}/template.q")
 
-    crystal_name = get_crystal_name(poscar_filepath)
+    crystal, symbols, scalings = get_crystal_info(poscar_filepath)
     temps = config['temps']
 
-    if not os.path.exists("jobs"):
-        os.system(f"mkdir jobs")
+    os.makedirs("jobs", exist_ok=True)
     
-    crystal_path = os.path.join("jobs", crystal_name)
-    if not os.path.exists(crystal_path):
-        os.system(f"mkdir {crystal_path}")
-    
+    crystal_path = os.path.join("jobs", symbols)
+    os.makedirs(crystal_path, exist_ok=True)
     
     poscar_name = os.path.basename(poscar_filepath)
     dest_path = os.path.join(crystal_path, poscar_name)
@@ -55,24 +53,26 @@ def create_jobs(config : list, poscar_filepath : str):
         logger.warning("POSCAR already exists. Job skipped.")
         raise FileExistsError
     
-    os.system(f"mv {poscar_filepath} {crystal_path}")
+    shutil.move(poscar_filepath, crystal_path)
     
     job_paths = []
 
     for temp in temps:
         job_path = os.path.join(crystal_path, str(temp)+"K")
-        if not os.path.exists(job_path):
-            os.system(f"mkdir {job_path}")
+        os.makedirs(job_path, exist_ok=True)
     
         temp_conf = copy.deepcopy(config)
-        temp_conf['temps'] = temp
-        del temp_conf['vasp_files']
+        temp_conf['temps'] = [temp]
+        temp_conf['vasp_files'] = [crystal + ".poscar"]
+        temp_conf['x_scalings'] = [scalings[0]]
+        temp_conf['y_scalings'] = [scalings[1]]
+        temp_conf['z_scalings'] = [scalings[2]]
 
-        name = poscar_name + "_" + str(temp) + "K"
+        name = poscar_name.removesuffix(".poscar") + "_" + str(temp) + "K"
         config_filepath = f'{job_path}/{name}.yaml'
         
         with open(config_filepath, 'w') as file:
-            yaml.dump(temp_conf, file, default_flow_style=None)
+            yaml.dump([temp_conf], file, default_flow_style=None)
         job_path = write_job(template, dest_path, config_filepath)
         job_paths.append(job_path)
 
@@ -115,7 +115,7 @@ def write_job(lines: list[str], poscar_filepath : str, config_filepath : str, no
         job_file.write(output)
     """
     curr_dir = os.path.dirname(__file__)
-    job_file.write (f"python3 {curr_dir}/md.py {poscar_filepath} {config_filepath}")
+    job_file.write(f"python3 {curr_dir}/md.py {poscar_filepath} {config_filepath}")
     
     # What python file to execute needs to be written here.
     job_file.close()
@@ -133,7 +133,7 @@ def get_template(file_path: str) -> list[str]:
     
     return lines
 
-def get_crystal_name(poscar_filepath : str):
+def get_crystal_info(poscar_filepath : str):
     file_name : str
     try:
         file_name = os.path.basename(poscar_filepath).removesuffix(".poscar")
@@ -142,12 +142,14 @@ def get_crystal_name(poscar_filepath : str):
         logger.error("Filepath needs to point to a poscar.")
         raise NameError
     parts = file_name.split('_')
-
+    scalings = []
+    i = 0
     try:
         if parts[0] == 'fractured':
-            symbols = formula.Formula(parts[1])
-        else:
-            symbols = formula.Formula(parts[0])
+            i = 1   
+
+        symbols = formula.Formula(parts[i])
+        scalings = [int(x) for x in parts[i+1].split('x')]
     
     except:
         logger.error("File name does not follow the necessary conventions.")
@@ -157,9 +159,9 @@ def get_crystal_name(poscar_filepath : str):
     for species in symbols.count().keys():
         species_list.append(species)
 
-    species_list.sort()
+    #species_list.sort()
 
-    return ''.join(species_list)
+    return parts[i], ''.join(species_list), scalings
 
 if __name__ == "__main__": 
     create_jobs()

@@ -74,14 +74,9 @@ if __name__ == "__main__":
     poscar_path = sys.argv[1]
     config_path = sys.argv[2]
 
-    config_data = {}
-    with open(config_path, 'r') as file:
-        config_data = yaml.safe_load(file)
-        file.close()
-    print(config_data)
-    temp = config_data['temps']
-    print(poscar_path)
-    print(config_path)
-    print(temp)
+    config_data = read_config.main(config_path)[0]
     
-    run_md(poscar_path, temp, 100, 0.01)
+    temp = config_data['temps'][0]
+    iterations = config_data['iterations']
+    
+    run_md(poscar_path, temp, iterations, 0.01)
