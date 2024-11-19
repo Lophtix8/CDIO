@@ -87,7 +87,10 @@ def create_jobs(config : dict, poscar_filepath : str):
     os.makedirs(crystal_path, exist_ok=True)
     
     poscar_name = os.path.basename(poscar_filepath)
-    dest_path = os.path.join(crystal_path, poscar_name)
+    
+    project_dir = os.getcwd()
+    dest_path = os.path.join(project_dir, crystal_path, poscar_name)
+
     if os.path.exists(dest_path):
         logger.warning("POSCAR already exists. Job skipped.")
         raise FileExistsError
@@ -97,8 +100,8 @@ def create_jobs(config : dict, poscar_filepath : str):
     job_paths = []
 
     for temp in temps:
-        job_path = os.path.join(crystal_path, str(temp)+"K")
-        os.makedirs(job_path, exist_ok=True)
+        job_dir = os.path.join(crystal_path, str(temp)+"K")
+        os.makedirs(job_dir, exist_ok=True)
     
         temp_conf = copy.deepcopy(config)
         temp_conf['temps'] = [temp]
@@ -108,11 +111,12 @@ def create_jobs(config : dict, poscar_filepath : str):
         temp_conf['z_scalings'] = [scalings[2]]
 
         name = poscar_name.removesuffix(".poscar") + "_" + str(temp) + "K"
-        config_filepath = f'{job_path}/{name}.yaml'
+        config_filepath = f'{job_dir}/{name}.yaml'
         
         with open(config_filepath, 'w') as file:
             yaml.dump([temp_conf], file, default_flow_style=None)
         job_path = write_job(template_path, dest_path, config_filepath)
+        
         job_paths.append(job_path)
 
     return job_paths
