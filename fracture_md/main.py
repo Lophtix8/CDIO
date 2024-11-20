@@ -1,4 +1,5 @@
 import os
+import argparse
 from fracture_md import job_manager, md
 
 
@@ -17,11 +18,6 @@ def run_jobs():
                 md.run_md(poscar,float(temp),100,0.01)
     return
 
-def prompt_user(): 
-    which_config = input("Which config-file to run?\n")
-    type_of_job = input("Only prepare jobs (1), queue prepared jobs (2) or prepare and queue simulations (3)\n")
-    return which_config, type_of_job
-
 def prepare_jobs(config):
     job_manager.prepare_jobs(config)
     return
@@ -31,27 +27,28 @@ def queue_jobs():
     run_jobs()
     return
 
-def prepare_and_queue(config):
-    job_manager.prepare_jobs(config)
-    #job_manager.queue_jobs()
-    run_jobs()
-    return
-
 def main():
     curr_dir = os.path.dirname(__file__)
-    config, type_of_job = prompt_user()
+    #config, type_of_job = prompt_user()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config_file', type=str)
+    parser.add_argument('type_of_job', type=str)
+    args = parser.parse_args()
+    config = args.config_file
+    type_of_job = args.type_of_job
     
-    if type_of_job == "1":
+    if type_of_job == "p":
         prepare_jobs(f"{curr_dir}/{config}")
     
-    elif type_of_job == "2":
+    elif type_of_job == "q":
         queue_jobs()
     
-    elif type_of_job == "3":
-        prepare_and_queue(f"{curr_dir}/{config}")
+    elif type_of_job == "pq":
+        job_manager.prepare_jobs(f"{curr_dir}/{config}")
+        job_manager.queue_jobs(f"{curr_dir}/{config}")
     
     else:
-        print("Invalid option, exiting")
+        print("Invalid option. Exiting...")
         return
     return
 
