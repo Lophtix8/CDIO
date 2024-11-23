@@ -6,6 +6,7 @@ from asap3 import Trajectory
 import numpy as np
 from asap3 import EMT
 from ase.calculators.lammpsrun import LAMMPS
+from mace.calculators import mace_mp
 
 
 def calcenergy(a):
@@ -39,16 +40,10 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
     
     # Pbc is by default set to true.
     # crystal.pbc = [False, False, False]
-    parameters = {
-        'pair_style': 'tersoff',
-        'pair_coeff': ['* * SiC.tersoff Si C']
-    }
     
-    files = ['SiC.tersoff']
+    calc = mace_mp(model="small", default_dtype="float32", device="cpu")
     
-    lammps = LAMMPS(files=files, **parameters)
-    
-    crystal.calc = lammps
+    crystal.calc = calc
     
     # Set the momenta corresponding to T=300K
     MaxwellBoltzmannDistribution(crystal, temperature_K=temp)
@@ -94,4 +89,4 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
 
  
 if __name__ == "__main__":
-    run_md('fractured_Al_10x20x10.poscar', 300, 100, 0.01)
+    run_md('fractured_Al_5x10x5.poscar', 300, 100, 0.01)
