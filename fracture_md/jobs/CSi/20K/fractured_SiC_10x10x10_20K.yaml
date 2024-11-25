@@ -1,0 +1,13 @@
+- custom_fracture: false
+  fracture:
+  - [0.4, 0.6]
+  - [0.4, 0.6]
+  - [0, 1]
+  iterations: 1000
+  stress_plane: '100'
+  t_interval: 5
+  temps: [20]
+  vasp_files: [SiC.poscar]
+  x_scalings: [10]
+  y_scalings: [10]
+  z_scalings: [10]
