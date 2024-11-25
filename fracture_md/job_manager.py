@@ -141,23 +141,23 @@ def write_job(template_path: str, poscar_filepath : str, config_filepath : str, 
     num = 0
     
     job_dir = os.path.dirname(config_filepath)
-    #file_path = os.path.join(job_dir, f"temp_job_{num}.q")
-    file_path = os.path.join(job_dir, f"temp_job_{num}.sh")
+    file_path = os.path.join(job_dir, f"temp_job_{num}.q")
+    #file_path = os.path.join(job_dir, f"temp_job_{num}.sh")
 
     # Check that file name isn't already used
     while(os.path.isfile(file_path)):
         num += 1
-        #file_path = os.path.join(job_dir, f"temp_job_{num}.q")
-        file_path = os.path.join(job_dir, f"temp_job_{num}.sh")
+        file_path = os.path.join(job_dir, f"temp_job_{num}.q")
+        #file_path = os.path.join(job_dir, f"temp_job_{num}.sh")
     
     job_file = open(file_path, 'w')
     ###
-    job_file.write("#!/bin/bash\n")
+    #job_file.write("#!/bin/bash\n")
     ###
 
     lines = get_template(template_path)
 
-    """
+    
     for line in lines:
         parts = line.split()
         
@@ -175,9 +175,9 @@ def write_job(template_path: str, poscar_filepath : str, config_filepath : str, 
 
         output = ' '.join(parts)+"\n"
         job_file.write(output)
-    """
+    
     curr_dir = os.path.dirname(__file__)
-    job_file.write(f"python3 {curr_dir}/md.py {poscar_filepath} {config_filepath}")
+    job_file.write(f"time python3 {curr_dir}/md.py {poscar_filepath} {config_filepath}")
     
     # What python file to execute needs to be written here.
     job_file.close()
