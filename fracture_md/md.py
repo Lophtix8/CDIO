@@ -5,11 +5,23 @@ from ase import units
 from asap3 import Trajectory
 import numpy as np
 from asap3 import EMT
-from ase.calculators.lammpsrun import LAMMPS
 from mace.calculators import mace_mp
+import logging
+from ase.calculators.eam import EAM
 
+logger = logging.getLogger(__name__)
 
 def calcenergy(a):
+    """A function that calculates the total, potential and kinetic energy as well as the 
+    instantaneous temperature of the crystal
+
+    Args:
+        a (atom): The atom object, or crystal, of which the energies and temperature should
+        be calculated.
+
+    Returns:
+        epot, ekin, int_T, etot (floats): The calculated quantities.
+    """
     epot = a.get_potential_energy() / len(a)
     ekin = a.get_kinetic_energy() / len(a)
     int_T = ekin / (1.5 * units.kB)
@@ -28,21 +40,17 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
         strain_rate (int): Strain rate
 
     """
-    
-    from asap3 import EMT
+    logger.info("Starting md program.")
     file_path = 'Fractured_supercells/'
         
     # Set up crystal
     crystal = read(file_path + supercell_file)
     
-    # Describe the interatomic interactions with the Effective Medium Theory
-    # crystal.calc = EMT()
+    # Describe the interatomic interactions with Mace_mp
     
-    # Pbc is by default set to true.
-    # crystal.pbc = [False, False, False]
-    
-    calc = mace_mp(model="small", default_dtype="float32", device="cpu")
-    
+    logger.info("Setting up interatomic potential.")
+    calc = EAM(potential="Al.eam.alloy")
+    # calc = mace_mp(model="small", default_dtype="float32", device="cpu")
     crystal.calc = calc
     
     # Set the momenta corresponding to T=300K
@@ -62,6 +70,7 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
 
     # Function to incrementally apply strain in the z-direction
     def apply_incremental_strain():
+        """Function that applies incremental strain in the z-direction."""
         strain_matrix = np.eye(3)  # Identity matrix
         strain_matrix[2, 2] += strain_rate  # Apply strain in z-direction
         crystal.set_cell(crystal.cell @ strain_matrix, scale_atoms=True)  # Scale cell and atom positions
@@ -71,7 +80,7 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
 
 
     def printenergy(a=crystal):  # store a reference to atoms in the definition.
-        """Function to print the potential, kinetic and total energy."""
+        """Function to print the potential, kinetic and total energy of the crystal."""
         epot, ekin, int_T, etot = calcenergy(a)
         print('Energy per atom: Epot = %.3feV  Ekin = %.3feV (T=%3.0fK)'
               'Etot = %.3feV' % (epot, ekin, int_T, etot))
@@ -79,14 +88,15 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
     # Run the dynamics
     
     # Relaxation
+    logger.info("Relaxing the system to reach equilibrium.")
     dyn_relax.attach(printenergy, interval=10)
     dyn_relax.run(100)
     
     # Straining
+    logger.info("Straining the system.")
     dyn.attach(printenergy, interval=10)
-    printenergy()
     dyn.run(num_steps)
 
  
 if __name__ == "__main__":
-    run_md('fractured_Al_5x10x5.poscar', 300, 100, 0.01)
+    run_md('fractured_Al_5x5x5.poscar', 300, 100, 0.005)
