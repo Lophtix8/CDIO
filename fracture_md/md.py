@@ -8,6 +8,8 @@ from fracture_md import read_config
 import sys, os, yaml
 import numpy as np
 
+
+
 def calcenergy(a):
     epot = a.get_potential_energy() / len(a)
     ekin = a.get_kinetic_energy() / len(a)
