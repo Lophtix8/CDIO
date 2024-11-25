@@ -7,8 +7,10 @@ from asap3 import Trajectory
 import read_config
 import sys, os, yaml
 import numpy as np
+import logging
+from asap3 import EMT
 
-
+logger = logging.getLogger(__name__)
 
 def calcenergy(a):
     epot = a.get_potential_energy() / len(a)
@@ -28,8 +30,6 @@ def run_md(supercell_path: str, temp: float, num_steps: int, strain_rate: int):
         strain_rate (int): Strain rate
 
     """
-    
-    from asap3 import EMT
         
     # Set up crystal
     crystal = read(supercell_path)

@@ -31,7 +31,7 @@ def queue_jobs(job_paths : list[str] = []):
         job_paths=[] (list[str])
     """
     for job_path in job_paths:
-        os.system(f"bash {job_path}")
+        os.system(f"sbatch {job_path}")
     pass
 
 def prepare_jobs(conf_path : str, fractured=True, unfractured=False):
@@ -100,7 +100,7 @@ def create_jobs(config : dict, poscar_filepath : str):
     job_paths = []
 
     for temp in temps:
-        job_dir = os.path.join(crystal_path, str(temp)+"K")
+        job_dir = os.path.join(project_dir, crystal_path, str(temp)+"K")
         os.makedirs(job_dir, exist_ok=True)
     
         temp_conf = copy.deepcopy(config)

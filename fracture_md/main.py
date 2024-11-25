@@ -1,35 +1,21 @@
 import os
 import argparse
 from fracture_md import job_manager, md
+import logging
 
+logger = logging.getLogger(__name__)
 
-def run_jobs():
-    for material in os.listdir("jobs"):
-        poscars_to_run = []
-        temps_to_run = []    
-        for file in os.listdir(f"jobs/{material}"):
-            if file.endswith(".poscar"):
-                poscars_to_run.append(f"{material}/{file}")
-            elif file.endswith("K"):
-                temps_to_run.append(file.split("K")[0])
-
-        for poscar in poscars_to_run:
-            for temp in temps_to_run:
-                md.run_md(poscar,float(temp),100,0.01)
-    return
 
 def prepare_jobs(config):
     job_manager.prepare_jobs(config)
     return
 
-def queue_jobs():
-    #job_manager.queue_jobs()
-    run_jobs()
+def queue_jobs(jobs_filepaths=[]):
+    job_manager.queue_jobs(jobs_filepaths)
     return
 
 def main():
     curr_dir = os.path.dirname(__file__)
-    #config, type_of_job = prompt_user()
     parser = argparse.ArgumentParser()
     parser.add_argument('config_file', type=str)
     parser.add_argument('type_of_job', type=str)
@@ -44,11 +30,10 @@ def main():
         queue_jobs()
     
     elif type_of_job == "pq":
-        job_manager.prepare_jobs(f"{curr_dir}/{config}")
-        job_manager.queue_jobs(f"{curr_dir}/{config}")
+        job_manager.prepare_and_queue(config)
     
     else:
-        print("Invalid option. Exiting...")
+        logger.error("Invalid run option given at startup.")
         return
     return
 
