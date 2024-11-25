@@ -2,7 +2,9 @@ import os, shutil
 from ase.io import read, write
 from os.path import abspath, dirname
 import shutil
+import logging
 
+logging.getLogger(__name__)
 
 DIR_NAME = dirname(abspath(__file__))
 
