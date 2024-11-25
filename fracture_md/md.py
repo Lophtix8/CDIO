@@ -4,10 +4,8 @@ from ase.md.verlet import VelocityVerlet
 from ase import units
 from asap3 import Trajectory
 import numpy as np
-from asap3 import EMT
-from mace.calculators import mace_mp
 import logging
-from ase.calculators.eam import EAM
+from ase.calculators.kim.kim import KIM
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +27,7 @@ def calcenergy(a):
     return epot, ekin, int_T, etot
     
 
-def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
+def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int, potential_id):
     """This function runs a molecular dynamics simulation and deposits the result in the 
     folder named "Simulation_results".
     
@@ -46,12 +44,15 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
     # Set up crystal
     crystal = read(file_path + supercell_file)
     
-    # Describe the interatomic interactions with Mace_mp
+    # Describe the interatomic interactions with a potential-id from OpenKim.
     
     logger.info("Setting up interatomic potential.")
-    calc = EAM(potential="Al.eam.alloy")
-    # calc = mace_mp(model="small", default_dtype="float32", device="cpu")
-    crystal.calc = calc
+    try:
+        crystal.calc = calc
+        calc = KIM(potential_id)
+    except:
+        logger.error("Could not find the potential-id that was given.")
+        return
     
     # Set the momenta corresponding to T=300K
     MaxwellBoltzmannDistribution(crystal, temperature_K=temp)
@@ -78,7 +79,6 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
     # Attach strain application to dynamics at every step
     dyn.attach(apply_incremental_strain, interval=1)
 
-
     def printenergy(a=crystal):  # store a reference to atoms in the definition.
         """Function to print the potential, kinetic and total energy of the crystal."""
         epot, ekin, int_T, etot = calcenergy(a)
@@ -99,4 +99,5 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int):
 
  
 if __name__ == "__main__":
-    run_md('fractured_Al_5x5x5.poscar', 300, 100, 0.005)
+    potential_id = "EAM_CubicNaturalSpline_ErcolessiAdams_1994_Al__MO_800509458712_002"
+    run_md('fractured_Al_5x5x5.poscar', 300, 100, 0.005, potential_id)
