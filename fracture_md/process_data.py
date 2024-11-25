@@ -25,11 +25,6 @@ def read_traj_file(traj_filename: str) -> list[dict[str, float]]:
 		traj_properties (list): A list of dictionaries. Each entry in the list contains the properties of that step. \n 
 		For example, the temperature at the 3rd step is located at: 
 		traj_properties[2][temperature] 
-<<<<<<< HEAD:fracture_md/process_data.py
-=======
-		
-
->>>>>>> b494d214a83eacad85a8f0b973a383259aa9ef8d:src/process_data.py
 	"""
 	# This could possibly be changed to return relevant properties instead. I.e. read_traj_file("example.traj", temperature=True).
 	# Or to take the command line object as it's argument and manage that.
@@ -42,15 +37,18 @@ def read_traj_file(traj_filename: str) -> list[dict[str, float]]:
 
 	# If not pure, process the trajectory data.
 	traj_properties = []
-	
+
+	from asap3 import EMT
 	for atoms in traj:
 		# Properties in traj object.
+		atoms.calc = EMT()
 		atom_num = len(traj[-1])
 		traj_properties.append \
 			({"ekin": atoms.get_kinetic_energy()/atom_num,
 	 		  "epot": atoms.get_potential_energy()/atom_num,
-			  "etot": atoms.get_total_energy()/atom_num})
-		
+			  "etot": atoms.get_total_energy()/atom_num,
+			  "stress": atoms.get_stress()})
+
 		# Derived properties.
 		traj_properties[-1]["temperature"] = traj_properties[-1]["ekin"] / (1.5 * units.kB)
 
@@ -65,12 +63,23 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 		combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.
 		properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.
 	"""
-	
+	property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
+
 	steps = range(len(traj_properties))
 	
 	plt.clf()
+	plt.xlabel("10*steps")
+	legends_comb = []
 	for parameter, include in properties.items():
+		legends = []
 		if include: # Check local bool variables temperature, ekin, epot, etot
+			if parameter == "stress":
+				directions = ["xx", "yy", "zz", "yz", "xz", "xy"]
+				for direction in directions:
+					legends.append(parameter+"."+direction)
+			else:
+				legends.append(parameter)
+
 			y = []
 			for step in steps:
 				y.append(traj_properties[step][parameter])
@@ -78,10 +87,16 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 			plt.plot(steps, y)
 			
 			if not combined_plot:
+				plt.ylabel(property_units[parameter])
+				plt.legend(legends, loc="lower right")
 				plt.savefig(parameter+".pdf")
 				plt.clf()
+			else:
+				legends_comb += legends
 	
-	if combined_plot and properties is not {}: 
+	
+	if combined_plot and properties is not {}:
+		plt.legend(legends_comb, loc="lower right") 
 		plt.savefig("combined.pdf")
 
 if __name__ == "__main__":
