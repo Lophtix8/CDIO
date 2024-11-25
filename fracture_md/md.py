@@ -27,7 +27,7 @@ def calcenergy(a):
     return epot, ekin, int_T, etot
     
 
-def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int, potential_id):
+def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int, potential_id: str):
     """This function runs a molecular dynamics simulation and deposits the result in the 
     folder named "Simulation_results".
     
