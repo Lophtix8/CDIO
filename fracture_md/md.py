@@ -3,6 +3,8 @@ from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase.md.verlet import VelocityVerlet
 from ase import units
 from asap3 import Trajectory
+from fracture_md import read_config
+import sys, os, yaml
 import numpy as np
 import logging
 from ase.calculators.kim.kim import KIM
@@ -27,7 +29,7 @@ def calcenergy(a):
     return epot, ekin, int_T, etot
     
 
-def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int, potential_id: str):
+def run_md(supercell_path: str, temp: float, num_steps: int, strain_rate: int, potential_id:str):
     """This function runs a molecular dynamics simulation and deposits the result in the 
     folder named "Simulation_results".
     
@@ -39,19 +41,21 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int, p
 
     """
     logger.info("Starting md program.")
-    file_path = 'Fractured_supercells/'
         
     # Set up crystal
-    crystal = read(file_path + supercell_file)
+    print(supercell_path)
+    crystal = read(supercell_path)
+    supercell_file = os.path.basename(supercell_path)
     
     # Describe the interatomic interactions with a potential-id from OpenKim.
     
     logger.info("Setting up interatomic potential.")
     try:
-        crystal.calc = calc
         calc = KIM(potential_id)
+        crystal.calc = calc
     except:
         logger.error("Could not find the potential-id that was given.")
+        print(potential_id)
         return
     
     # Set the momenta corresponding to T=300K
@@ -63,8 +67,10 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int, p
     # We want to run MD with constant energy using the VelocityVerlet algorithm.
     dyn = VelocityVerlet(crystal, 5 * units.fs)  # 5 fs time step.
     
+    dest_path = os.path.dirname(supercell_path) + "/Simulation_results/"
+    os.makedirs(dest_path, exist_ok=True)
     resultdata_file_name = "{file_name}.traj"
-    traj = Trajectory('Simulation_results/' + resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar')), "w", crystal)
+    traj = Trajectory(dest_path + resultdata_file_name.format(file_name = supercell_file.removesuffix('.poscar') + f"_{temp}K"), "w", crystal)
     
     dyn_relax.attach(traj.write, interval=10)
     dyn.attach(traj.write, interval=10)
@@ -99,5 +105,13 @@ def run_md(supercell_file: str, temp: float, num_steps: int, strain_rate: int, p
 
  
 if __name__ == "__main__":
-    potential_id = "EAM_CubicNaturalSpline_ErcolessiAdams_1994_Al__MO_800509458712_002"
-    run_md('fractured_Al_5x5x5.poscar', 300, 100, 0.005, potential_id)
+    poscar_path = sys.argv[2]
+    config_path = sys.argv[1]
+
+    config_data = read_config.main(config_path)[0]
+    
+    temp = config_data['temps'][0]
+    iterations = config_data['iterations']
+    potential_id = config_data['potential']
+    
+    run_md(poscar_path, temp, iterations, 0.001, potential_id)

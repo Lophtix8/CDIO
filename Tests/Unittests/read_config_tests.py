@@ -9,7 +9,7 @@ class ConfigFileTests(unittest.TestCase):
     
     def test_main(self):
         # Maybe this test is not neccessary, or should be part of an integration test?
-        config_path = os.path.join(os.path.dirname(__file__), 'config_test.yaml')
+        config_path = os.path.join(os.path.dirname(__file__), '../ExampleFiles/config_test.yaml')
         config_data = read_config.main(config_path)
         self.assertTrue(isinstance(config_data, list))
         self.assertTrue(len(config_data) == 2)
