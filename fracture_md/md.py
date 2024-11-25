@@ -6,6 +6,9 @@ from asap3 import Trajectory
 import numpy as np
 from os.path import dirname, abspath
 
+from fracture_md import read_config
+import sys, os, yaml
+import numpy as np
 
 def calcenergy(a):
     epot = a.get_potential_energy() / len(a)
