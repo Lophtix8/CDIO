@@ -108,5 +108,5 @@ def main(config,dirpath):
                 file_paths['fractured'][fractured_filepath] = config
             else:
                 continue
-
+    logger.info(f"Successfully built {len(file_paths['fractured'].keys()} fractured supercells.")
     return file_paths
