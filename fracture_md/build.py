@@ -4,7 +4,7 @@ from os.path import abspath, dirname
 import shutil
 import logging
 
-logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 DIR_NAME = dirname(abspath(__file__))
 
@@ -33,7 +33,7 @@ def construct_supercell(dirpath, unitcell, x_scaling, y_scaling, z_scaling):
     
     supercell = unitcell*(x_scaling, y_scaling, z_scaling)
     filename = f"{material_name}_{x_scaling}x{y_scaling}x{z_scaling}.poscar" 
-    write(os.path.join(filepath,filename), supercell, format="vasp", sort=True, direct=True)
+    write(os.path.join(dirpath,filename), supercell, format="vasp", sort=True, direct=True)
     return filename
     
 def construct_crack(dirpath, filename, custom_fracture, x_fracture, y_fracture, z_fracture):
@@ -90,7 +90,7 @@ def main(config,project_dir):
 
     for unitcell in config["vasp_files"]:
         dirpath = os.path.join(project_dir, unitcell.split('.')[0])
-        os.makedirs(dirpath, exists_ok=True)
+        os.makedirs(dirpath, exist_ok=True)
 
         for supercell_number in range(len(config["x_scalings"])):
             x_scaling = config["x_scalings"][supercell_number]
