@@ -47,12 +47,11 @@ def construct_crack(dirpath, filename, custom_fracture, x_fracture, y_fracture, 
         y_fracture (list): Interval of atoms to remove in y-direction.
         z_fracture (list): Interval of atoms to remove in z-direction.
     """
-    curr_dir = os.path.dirname(__file__)
 
     if custom_fracture:
         return
     
-    with open(os.path.join(curr_dir, f"Supercells/{filename}")) as supercell:
+    with open(os.path.join(dirpath, filename)) as supercell:
         supercell_lines = supercell.readlines()
     
     lines_to_remove = []
