@@ -7,11 +7,11 @@ from fracture_md import build
 class BuildTests(ut.TestCase):
 
     def test_construct_supercell(self):
-        NotInDB = build.construct_supercell("MadeUpMaterial",2,2,2)
+        NotInDB = build.construct_supercell("Made_up_project_dir", "MadeUpMaterial",2,2,2)
         self.assertFalse(NotInDB)
 
     def test_construct_crack(self):
-        custom_crack = build.construct_crack("AnyMaterial", True, 0, 0, 0)
+        custom_crack = build.construct_crack("Made_up_project_dir", "AnyMaterial", True, 0, 0, 0)
         self.assertFalse(custom_crack)
 
     def test_delete_build(self):

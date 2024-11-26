@@ -111,5 +111,5 @@ def main(config,project_dir):
                 file_paths['fractured'][fractured_filepath] = config
             else:
                 continue
-    logger.info(f"Successfully built {len(file_paths['fractured'].keys()} fractured supercells.")
+    logger.info(f"Successfully built {len(file_paths['fractured'].keys())} fractured supercells.")
     return file_paths
