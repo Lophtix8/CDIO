@@ -34,7 +34,7 @@ def queue_jobs(job_paths : list[str] = []):
         os.system(f"sbatch {job_path}")
     pass
 
-def prepare_jobs(conf_path : str, fractured=True, unfractured=False):
+def prepare_jobs(conf_path : str, project_dir="jobs", fractured=True, unfractured=False):
     """
     Function that prepares jobs configured in the provided config file.
     Args:
@@ -50,7 +50,7 @@ def prepare_jobs(conf_path : str, fractured=True, unfractured=False):
     job_paths = []
     sim_data = read_config.main(conf_path)
     for config in sim_data:
-        poscar_paths = build.main(config)
+        poscar_paths = build.main(config, project_dir)
         
         if fractured:
             for poscar_path in poscar_paths['fractured'].keys():
@@ -80,27 +80,14 @@ def create_jobs(config : dict, poscar_filepath : str):
 
     crystal, symbols, scalings = get_crystal_info(poscar_filepath)
     temps = config['temps']
-
-    os.makedirs("jobs", exist_ok=True)
-    
-    crystal_path = os.path.join("jobs", symbols)
-    os.makedirs(crystal_path, exist_ok=True)
     
     poscar_name = os.path.basename(poscar_filepath)
-    
-    project_dir = os.getcwd()
-    dest_path = os.path.join(project_dir, crystal_path, poscar_name)
-
-    if os.path.exists(dest_path):
-        logger.warning("POSCAR already exists. Job skipped.")
-        raise FileExistsError
-    
-    shutil.move(poscar_filepath, crystal_path)
+    poscar_dir = os.path.dirname(poscar_filepath)
     
     job_paths = []
 
     for temp in temps:
-        job_dir = os.path.join(project_dir, crystal_path, str(temp)+"K")
+        job_dir = os.path.join(poscar_dir, str(temp)+"K")
         os.makedirs(job_dir, exist_ok=True)
     
         temp_conf = copy.deepcopy(config)
@@ -115,7 +102,7 @@ def create_jobs(config : dict, poscar_filepath : str):
         
         with open(config_filepath, 'w') as file:
             yaml.dump([temp_conf], file, default_flow_style=None)
-        job_path = write_job(template_path, dest_path, config_filepath)
+        job_path = write_job(template_path, poscar_filepath, config_filepath)
         
         job_paths.append(job_path)
 
