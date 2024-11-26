@@ -49,8 +49,16 @@ def prepare_jobs(conf_path : str, project_dir="jobs", fractured=True, unfracture
     """
     job_paths = []
     sim_data = read_config.main(conf_path)
-    for config in sim_data:
-        poscar_paths = build.main(config, project_dir)
+    working_dir = os.getcwd()
+    abs_working_dir = ""
+    if(project_dir[0] != "/"):
+        abs_working_dir = os.path.join(working_dir, project_dir)
+    else:
+        abs_working_dir = project_dir
+    
+    for config in sim_data:    
+            
+        poscar_paths = build.main(config, abs_working_dir)
         
         if fractured:
             for poscar_path in poscar_paths['fractured'].keys():
