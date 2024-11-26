@@ -78,17 +78,20 @@ def construct_crack(dirpath, filename, custom_fracture, x_fracture, y_fracture, 
 def delete_build(filename):
     os.remove(filename)
 
-def main(config,dirpath):
+def main(config,project_dir):
     """Takes in configs as dictionaries and creates simulation-cells from it
 
     Args:
         config (dict): The config-dictionary is parsed from the input config-file specified in the user manual.
-        dirpath (str): The path to where we will save the poscar-file.
+        project_dir (str): The path to where we will save the simulations.
     """
-
+    
     file_paths = {'fractured' : {}, 'unfractured' : {}}
 
     for unitcell in config["vasp_files"]:
+        dirpath = os.path.join(project_dir, unitcell.split('.')[0])
+        os.makedirs(dirpath, exists_ok=True)
+
         for supercell_number in range(len(config["x_scalings"])):
             x_scaling = config["x_scalings"][supercell_number]
             y_scaling = config["y_scalings"][supercell_number]
@@ -98,7 +101,7 @@ def main(config,dirpath):
             y_fracture = config["fracture"][1]
             z_fracture = config["fracture"][2]
             custom_fracture = config["custom_fracture"]
-
+            
             supercell_filename = construct_supercell(dirpath, unitcell, x_scaling, y_scaling, z_scaling)
             if supercell_filename:
                 construct_crack(dirpath, supercell_filename, custom_fracture, x_fracture, y_fracture, z_fracture)
