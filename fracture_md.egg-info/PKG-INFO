@@ -1,9 +1,0 @@
-Metadata-Version: 2.1
-Name: fracture_md
-Version: 0.1
-Summary: MD simulation package for fractured materials
-Home-page: https://github.com/Lophtix8/CDIO
-Author: Lophtix8, pierrebob, LinneaSerrander, Snurre3, KSpaceTurtle
-Author-email: notanemailaddress@gmail.com
-License: LiU
-License-File: LICENSE

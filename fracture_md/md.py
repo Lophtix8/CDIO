@@ -3,7 +3,8 @@ from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase.md.verlet import VelocityVerlet
 from ase import units
 from asap3 import Trajectory
-from fracture_md import read_config
+
+import read_config
 import sys, os, yaml
 import numpy as np
 import logging
