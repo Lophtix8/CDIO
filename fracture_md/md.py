@@ -19,7 +19,7 @@ def calcenergy(a):
     etot = epot + ekin
     return epot, ekin, int_T, etot
 
-def run_md(supercell_path: str, temp: float, num_steps: int, strain_rate: int):
+def run_md(supercell_path: str, temp: float, num_steps: int, strain_rate: int, strain_interval: int):
     """This function runs a molecular dynamics simulation and deposits the result in the 
     folder named "Simulation_results".
     
@@ -55,9 +55,9 @@ def run_md(supercell_path: str, temp: float, num_steps: int, strain_rate: int):
         strain_matrix = np.eye(3)  # Identity matrix
         strain_matrix[2, 2] += strain_rate  # Apply strain in z-direction
         crystal.set_cell(crystal.cell @ strain_matrix, scale_atoms=True)  # Scale cell and atom positions
-
+    
     # Attach strain application to dynamics at every step
-    dyn.attach(apply_incremental_strain, interval=1)
+    dyn.attach(apply_incremental_strain, interval=strain_interval)
 
 
     def printenergy(a=crystal):  # store a reference to atoms in the definition.
@@ -81,4 +81,4 @@ if __name__ == "__main__":
     temp = config_data['temps'][0]
     iterations = config_data['iterations']
     
-    run_md(poscar_path, temp, iterations, 0.01)
+    run_md(poscar_path, temp, iterations, 0.0001, 5)

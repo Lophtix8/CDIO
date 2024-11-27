@@ -31,7 +31,8 @@ def queue_jobs(job_paths : list[str] = []):
         job_paths=[] (list[str])
     """
     for job_path in job_paths:
-        os.system(f"sbatch {job_path}")
+        os.system(f"bash {job_path}")
+        #os.system(f"sbatch {job_path}")
     pass
 
 def prepare_jobs(conf_path : str, fractured=True, unfractured=False):

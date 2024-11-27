@@ -35,19 +35,23 @@ def read_traj_file(traj_filename: str) -> list[dict[str, float]]:
 	except:
 		raise Exception("Trajectory file not found.")
 
-	# If not pure, process the trajectory data.
 	traj_properties = []
 
 	from asap3 import EMT
+	
+	atom_num = len(traj[0])
+	starting_z = traj[0].cell[2,2]
+
 	for atoms in traj:
 		# Properties in traj object.
 		atoms.calc = EMT()
-		atom_num = len(traj[-1])
+		curr_z = atoms.cell[2,2]
 		traj_properties.append \
 			({"ekin": atoms.get_kinetic_energy()/atom_num,
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num,
-			  "stress": atoms.get_stress()})
+			  "stress": atoms.get_stress(),
+			  "strain": curr_z/starting_z})
 
 		# Derived properties.
 		traj_properties[-1]["temperature"] = traj_properties[-1]["ekin"] / (1.5 * units.kB)
@@ -66,6 +70,12 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 	property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
 
 	steps = range(len(traj_properties))
+	strains = []
+
+	for step in steps:
+		strains.append(traj_properties[step]['strain'])
+
+	print(strains)
 	
 	plt.clf()
 	plt.xlabel("10*steps")
@@ -84,7 +94,7 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 			for step in steps:
 				y.append(traj_properties[step][parameter])
 
-			plt.plot(steps, y)
+			plt.plot(strains, y)
 			
 			if not combined_plot:
 				plt.ylabel(property_units[parameter])
