@@ -52,7 +52,7 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 			({"ekin": atoms.get_kinetic_energy()/atom_num,
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num,
-			  "stress": atoms.get_stress(),
+			  "stress": atoms.get_stress()/units.GPa,
 			  "strain": curr_z/starting_z})
 
 		# Derived properties.
