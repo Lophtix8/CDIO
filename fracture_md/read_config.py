@@ -56,7 +56,7 @@ def check_data(config_data):
     
     keys_to_check = {"vasp_files", "x_scalings", "y_scalings", "z_scalings",
                      "custom_fracture", "fracture", "temps", "stress_plane", "t_interval",
-                     "iterations", "potential"}
+                     "iterations", "potential", "strain_rate", "strain_interval", "relaxation_iterations"}
     
     for config in config_data:
         
@@ -68,9 +68,10 @@ def check_data(config_data):
         
         list_keys = {"vasp_files", "x_scalings", "y_scalings", "z_scalings",
                      "temps", "fracture"}
-        int_keys = {"t_interval", "iterations"}
+        int_keys = {"t_interval", "iterations", "relaxation_iterations", "strain_interval"}
         str_keys = {"stress_plane", "potential"}
         bool_keys = {"custom_fracture"}
+        float_keys = {"strain_rate"}
         
         #Check that datatypes are valid
         if not all(isinstance(config[key], list) for key in list_keys):
@@ -88,7 +89,12 @@ def check_data(config_data):
         if not all(isinstance(config[key], bool) for key in bool_keys):
             logger.error("Argument type should be bool but is not.")
             raise TypeError("TypeError")
-            
+
+        if not all(isinstance(config[key], float) for key in float_keys):
+            logger.error("Argument type should be float but is not.")
+            raise TypeError("TypeError")
+        
+
         # Check so that fracture has exactly three intervals. 
         if not config["custom_fracture"] and len(config["fracture"]) != 3:
             logger.error("fracture should have three dimensions.")
@@ -110,11 +116,10 @@ def check_data(config_data):
         x_len = len(config["x_scalings"])
         y_len = len(config["y_scalings"])
         z_len = len(config["z_scalings"])
-        temp_len = len(config["temps"])
         
         # Lengths should be equal for the simulation to run correctly.
-        if not x_len == y_len == z_len == temp_len:
-            logger.error("Inconsistent number of scalings and/or temps.")
+        if not x_len == y_len == z_len:
+            logger.error("Inconsistent number of scalings.")
             raise ValueError("ValueError")
         
         if config["t_interval"] < 0:
