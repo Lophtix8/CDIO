@@ -1,6 +1,7 @@
 from ase.io.trajectory import Trajectory
 from ase import Atoms
 from ase import units
+from ase.calculators.kim.kim import KIM
 from matplotlib import pyplot as plt
 
 def process_data(traj_filename: str):
@@ -13,7 +14,7 @@ def process_data(traj_filename: str):
 	visualize(traj_properties, temperature=True)
 	return
 
-def read_traj_file(traj_filename: str) -> list[dict[str, float]]:
+def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, float]]:
 	"""
 	Reads a trajectory file and returns a list of dictionaries containing the parameters, or the pure trajectory object.
 	Currently implemented properties include kinetic energy, potential energy, total energy and temperature.
@@ -35,19 +36,24 @@ def read_traj_file(traj_filename: str) -> list[dict[str, float]]:
 	except:
 		raise Exception("Trajectory file not found.")
 
-	# If not pure, process the trajectory data.
 	traj_properties = []
 
-	from asap3 import EMT
+
+	calc = KIM(potential_id)
+	
+	atom_num = len(traj[0])
+	starting_z = traj[0].cell[2,2]
+
 	for atoms in traj:
 		# Properties in traj object.
-		atoms.calc = EMT()
-		atom_num = len(traj[-1])
+		atoms.calc = calc
+		curr_z = atoms.cell[2,2]
 		traj_properties.append \
 			({"ekin": atoms.get_kinetic_energy()/atom_num,
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num,
-			  "stress": atoms.get_stress()})
+			  "stress": atoms.get_stress(),
+			  "strain": curr_z/starting_z})
 
 		# Derived properties.
 		traj_properties[-1]["temperature"] = traj_properties[-1]["ekin"] / (1.5 * units.kB)
@@ -66,9 +72,13 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 	property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
 
 	steps = range(len(traj_properties))
+	strains = []
+
+	for step in steps:
+		strains.append(traj_properties[step]['strain'])
 	
 	plt.clf()
-	plt.xlabel("10*steps")
+	plt.xlabel("strain")
 	legends_comb = []
 	for parameter, include in properties.items():
 		legends = []
@@ -84,7 +94,7 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 			for step in steps:
 				y.append(traj_properties[step][parameter])
 
-			plt.plot(steps, y)
+			plt.plot(strains, y)
 			
 			if not combined_plot:
 				plt.ylabel(property_units[parameter])
