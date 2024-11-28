@@ -2,6 +2,7 @@ import os
 import argparse
 from fracture_md import job_manager, md
 import logging
+from fracture_md import read_config,build
 
 logger = logging.getLogger(__name__)
 
@@ -38,4 +39,9 @@ def main():
     return
 
 if __name__ == "__main__":
+    """
+    configs = read_config.main("config_template.yaml")
+    for config in configs:
+        build.main(config)
+    """
     main()
