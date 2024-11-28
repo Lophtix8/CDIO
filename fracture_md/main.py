@@ -17,6 +17,7 @@ def parser():
     return config, type_of_job
 
 def main(config, type_of_job, super_computer=True):
+
     curr_dir = os.path.dirname(__file__)
     
     if type_of_job == "p":
@@ -36,4 +37,4 @@ def main(config, type_of_job, super_computer=True):
 if __name__ == "__main__":
     
     config, type_of_job = parser()
-    main(config, type_of_job,False)
+    main(config, type_of_job, False)

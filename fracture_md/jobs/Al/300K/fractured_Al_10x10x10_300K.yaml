@@ -1,0 +1,14 @@
+- custom_fracture: false
+  fracture:
+  - [0, 1]
+  - [0, 0.5]
+  - [0.48, 0.52]
+  iterations: 200
+  potential: EAM_CubicNaturalSpline_ErcolessiAdams_1994_Al__MO_800509458712_002
+  stress_plane: '100'
+  t_interval: 5
+  temps: [300]
+  vasp_files: [Al.poscar]
+  x_scalings: [10]
+  y_scalings: [10]
+  z_scalings: [10]
