@@ -1,10 +1,11 @@
-- vasp_files: [SiC.poscar]
-  x_scalings: [2, 2, 2]
-  y_scalings: [2, 2, 2]
-  z_scalings: [2, 2, 2]
+- vasp_files: [Al.poscar]
+  x_scalings: [10]
+  y_scalings: [10]
+  z_scalings: [10]
   custom_fracture: false
-  fracture: [[0, 1], [0, 0.5], [0.4, 0.6]]
-  temps: [0, 300, 20]
+  fracture: [[0, 1], [0, 0.5], [0.48, 0.52]]
+  temps: [300]
   stress_plane: "100"
+  potential: "EAM_CubicNaturalSpline_ErcolessiAdams_1994_Al__MO_800509458712_002"
   t_interval: 5
-  iterations: 1000
+  iterations: 200

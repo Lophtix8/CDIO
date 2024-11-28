@@ -17,7 +17,7 @@ def main(config_file):
     Returns:
         config_data (list): Contains dictionaries for each block in the config file.
     """
-    
+
     try:
         file = open(config_file)
     except:
@@ -34,7 +34,7 @@ def main(config_file):
     try:
         logger.info("Checking data in config file...")
         config_data = check_data(config_data)
-    except (ValueError, TypeError) as e: 
+    except (ValueError, TypeError, KeyError) as e: 
         logger.error(f"An error was found: {e}, exiting the program.")
         sys.exit(1)
         
@@ -56,7 +56,7 @@ def check_data(config_data):
     
     keys_to_check = {"vasp_files", "x_scalings", "y_scalings", "z_scalings",
                      "custom_fracture", "fracture", "temps", "stress_plane", "t_interval",
-                     "iterations"}
+                     "iterations", "potential"}
     
     for config in config_data:
         
@@ -64,35 +64,35 @@ def check_data(config_data):
         if not keys_to_check.issubset(config.keys()):
             missing_keys = keys_to_check - config.keys()
             logger.error("Missing arguments in config: " + ', '.join(missing_keys))
-            raise KeyError
+            raise KeyError("KeyError")
         
         list_keys = {"vasp_files", "x_scalings", "y_scalings", "z_scalings",
                      "temps", "fracture"}
         int_keys = {"t_interval", "iterations"}
-        str_keys = {"stress_plane"}
+        str_keys = {"stress_plane", "potential"}
         bool_keys = {"custom_fracture"}
         
         #Check that datatypes are valid
         if not all(isinstance(config[key], list) for key in list_keys):
             logger.error("Argument type should be list but is not.")
-            raise TypeError
+            raise TypeError("TypeError")
         
         if not all(isinstance(config[key], int) for key in int_keys):
             logger.error("Argument type should be int but is not.")
-            raise TypeError
+            raise TypeError("TypeError")
             
         if not all(isinstance(config[key], str) for key in str_keys):
             logger.error("Argument type should be str but is not.")
-            raise TypeError
+            raise TypeError("TypeError")
             
         if not all(isinstance(config[key], bool) for key in bool_keys):
             logger.error("Argument type should be bool but is not.")
-            raise TypeError
+            raise TypeError("TypeError")
             
         # Check so that fracture has exactly three intervals. 
         if not config["custom_fracture"] and len(config["fracture"]) != 3:
             logger.error("fracture should have three dimensions.")
-            raise ValueError
+            raise ValueError("ValueError")
             
         
         # Remove invalid vasp files
@@ -115,15 +115,15 @@ def check_data(config_data):
         # Lengths should be equal for the simulation to run correctly.
         if not x_len == y_len == z_len == temp_len:
             logger.error("Inconsistent number of scalings and/or temps.")
-            raise ValueError
+            raise ValueError("ValueError")
         
         if config["t_interval"] < 0:
             logger.error("t_interval needs to be a positive integer.")
-            raise ValueError
+            raise ValueError("ValueError")
         
         if config["iterations"] < 0:
             logger.error("iterations needs to be a positive integer.")
-            raise ValueError
+            raise ValueError("ValueError")
             
     return config_data
 
