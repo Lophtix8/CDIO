@@ -9,7 +9,7 @@ from fracture_md import build, read_config
 
 logger = logging.getLogger(__name__)
 
-def prepare_and_queue(conf_path : str, fractured=True, unfractured=False):
+def prepare_and_queue(conf_path : str, fractured=True, unfractured=False, super_computer : bool = True):
     """
     Function that combines prepare_jobs and queue_jobs. It will queue the jobs prepared with the given config file path.
 
@@ -21,17 +21,21 @@ def prepare_and_queue(conf_path : str, fractured=True, unfractured=False):
         unfractured=False (bool): Whether to prepare jobs for the poscars without fractures.
     """
     job_paths = prepare_jobs(conf_path, fractured=fractured, unfractured=unfractured)
-    queue_jobs(job_paths)
+    queue_jobs(job_paths, super_computer=super_computer)
 
-def queue_jobs(job_paths : list[str] = []):
+def queue_jobs(job_paths : list[str] = [], super_computer : bool = True):
     """
     Function that queues the provided jobs, given as paths to .q files. If no paths are provided, the program will queue all non-ran jobs.
 
     Keyword Args:
         job_paths=[] (list[str])
     """
-    for job_path in job_paths:
-        os.system(f"sbatch {job_path}")
+    if super_computer:
+        for job_path in job_paths:
+            os.system(f"sbatch {job_path}")
+    else:
+        for job_path in job_paths:
+            os.system(f"bash {job_path}")
     pass
 
 def prepare_jobs(conf_path : str, project_dir="jobs", fractured=True, unfractured=False):

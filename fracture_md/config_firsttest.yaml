@@ -8,3 +8,4 @@
   stress_plane: "100"
   t_interval: 5
   iterations: 1000
+  potential: "MO_418978237058_005"

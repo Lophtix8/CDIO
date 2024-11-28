@@ -1,0 +1,14 @@
+- custom_fracture: false
+  fracture:
+  - [0.4, 0.6]
+  - [0.4, 0.6]
+  - [0.4, 0.6]
+  iterations: 1000
+  potential: MO_418978237058_005
+  stress_plane: '100'
+  t_interval: 5
+  temps: [300]
+  vasp_files: [Al.poscar]
+  x_scalings: [6]
+  y_scalings: [6]
+  z_scalings: [6]

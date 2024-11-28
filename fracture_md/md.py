@@ -106,8 +106,8 @@ def run_md(supercell_path: str, temp: float, num_steps: int, strain_rate: int, p
 
  
 if __name__ == "__main__":
-    poscar_path = sys.argv[2]
-    config_path = sys.argv[1]
+    poscar_path = sys.argv[1]
+    config_path = sys.argv[2]
 
     config_data = read_config.main(config_path)[0]
     
