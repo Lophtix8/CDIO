@@ -3,9 +3,12 @@
   y_scalings: [10]
   z_scalings: [10]
   custom_fracture: false
-  fracture: [[0, 1], [0, 0.5], [0.48, 0.52]]
+  fracture: [[0, 1], [0.1, 0.9], [0.45, 0.55]]
   temps: [300]
   stress_plane: "100"
   potential: "EAM_CubicNaturalSpline_ErcolessiAdams_1994_Al__MO_800509458712_002"
   t_interval: 5
   iterations: 200
+  strain_rate: 0.001
+  strain_interval: 10
+  relaxation_iterations: 100
