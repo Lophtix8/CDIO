@@ -3,6 +3,9 @@ from ase import Atoms
 from ase import units
 from ase.calculators.kim.kim import KIM
 from matplotlib import pyplot as plt
+import csv
+
+property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
 
 def process_data(traj_filename: str):
 	"""
@@ -60,7 +63,20 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 
 	return traj_properties
 
-def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool = False, **properties: bool) -> None:
+def write_to_csv(traj_properties: list[dict[str, float]], csv_path: str):
+	
+	fields = ['step'] + [property_units.keys()]
+	rows_without_steps = [[x.values()] for x in traj_properties]
+	rows = [[i]+rows_without_steps[i] for i in range(len(rows_without_steps))]
+
+	with open(csv_path, 'w') as f:
+		writer = csv.writer(f)
+		writer.writerow(fields)
+		writer.writerows(rows)
+
+
+
+def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, **properties: bool) -> None:
 	"""
 	Creates plot(s) of parameters with respect to iteration step.
 
@@ -69,7 +85,6 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 		combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.
 		properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.
 	"""
-	property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
 
 	steps = range(len(traj_properties))
 	strains = []
