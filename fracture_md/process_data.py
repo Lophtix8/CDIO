@@ -3,7 +3,9 @@ from ase import Atoms
 from ase import units
 from ase.calculators.kim.kim import KIM
 from matplotlib import pyplot as plt
-import csv
+import pickle
+import os
+import yaml
 
 property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
 
@@ -56,24 +58,112 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num,
 			  "stress": atoms.get_stress()/units.GPa,
-			  "strain": curr_z/starting_z})
+			  "strain": (curr_z/starting_z)-1})
 
 		# Derived properties.
 		traj_properties[-1]["temperature"] = traj_properties[-1]["ekin"] / (1.5 * units.kB)
 
 	return traj_properties
 
-def write_to_csv(traj_properties: list[dict[str, float]], csv_path: str):
+def get_results_dirs(job_dir: str) -> list[str]:
+	results_dirs = []
+	if not os.path.isabs(job_dir):
+		job_dir = os.path.join(os.getcwd(), job_dir)
+
+	material_dirs = [os.path.join(job_dir, x) for x in os.listdir(job_dir) \
+				   	 if os.path.isdir(os.path.join(job_dir, x))]
 	
-	fields = ['step'] + [property_units.keys()]
-	rows_without_steps = [[x.values()] for x in traj_properties]
-	rows = [[i]+rows_without_steps[i] for i in range(len(rows_without_steps))]
+	for material_dir in material_dirs:
+		results_dir = os.path.join(material_dir, "Simulation_results")
+		
+		if not os.path.isdir(results_dir):
+			continue # In case the simulation has not been run yet
+		results_dirs.append(results_dir)
 
-	with open(csv_path, 'w') as f:
-		writer = csv.writer(f)
-		writer.writerow(fields)
-		writer.writerows(rows)
+	return results_dirs
 
+def write_all_to_pkl(job_dir: str):
+	results_dirs = get_results_dirs(job_dir)
+	for results_dir in results_dirs:
+		trajectory_paths = [os.path.join(results_dir, x) for x in os.listdir(results_dir) \
+					  		if x.endswith(".traj")]
+		for trajectory_path in trajectory_paths:
+			
+			### Read the corresponding config file to get corresponding OpenKIM potential ###
+			crystal_name = os.path.basename(trajectory_path).rstrip('.traj')
+			crystal_properties = crystal_name.split('_')
+			
+			temp = ""
+			if crystal_properties[0] == "fractured":
+				temp = crystal_properties[3]
+			else:
+				temp = crystal_properties[2]
+			
+			conf_file_path = os.path.join(results_dir.rstrip("/Simulation_results"), temp, crystal_name+".yaml")
+			config_file = open(conf_file_path)
+			config_data = yaml.safe_load(config_file)[0]
+			config_file.close()
+			### End config reading ###
+
+			trajectory_data = read_traj_file(trajectory_path, config_data["potential"])
+			pickle_path = trajectory_path.rstrip('.traj') + ".pkl"
+			write_to_pkl(trajectory_data, pickle_path)
+
+
+def read_all_from_pkl(job_dir: str) -> dict[str, list[str, float]]:
+	results_dirs = get_results_dirs(job_dir)
+	pickle_paths = []
+	for results_dir in results_dirs:
+
+		pickle_paths += [os.path.join(results_dir, x) for x in os.listdir(results_dir) \
+				 			if x.endswith('.pkl')]
+	
+	crystal_traj_properties = {}
+	for pickle_path in pickle_paths:
+		crystal_name = os.path.basename(pickle_path).strip('.pkl')
+		traj_properties = read_from_pkl(pickle_path)
+		crystal_traj_properties[crystal_name] = traj_properties
+
+	return crystal_traj_properties
+
+def write_to_pkl(traj_properties: list[dict[str, float]], pkl_path: str) -> None:
+	file = open(pkl_path, 'wb') 
+	pickle.dump(traj_properties, file)
+	file.close()
+
+def read_from_pkl(pkl_path: str) -> list[dict[str, float]]:
+	file = open(pkl_path, 'rb')
+	traj_properties = pickle.load(file)
+	file.close()
+	return traj_properties
+
+def calc_elastic_tensor(traj_properties: list[dict[str, float]], strain_interval=0.1):
+	if traj_properties[-1]['strain'] < strain_interval:
+		raise ValueError("Trajectory does not include desired strain interval.")
+	
+	cijs = [0, 0, 0, 0, 0,  0]
+	counter = 0
+	for traj in traj_properties:
+		strain = traj["strain"]
+		if strain < 0.0001:
+			continue
+
+		if traj['strain'] > strain_interval:
+			break
+		counter += 1
+		stress = traj['stress']
+		for i in range(6):
+			# The non-diagonal elastic constants are half the voigt notation ones
+			if i > 2:
+				cijs[i] += stress[i]/(strain)
+			else:
+				cijs[i] += stress[i]/strain
+
+	for i in range(6): 
+		cijs[i]/=counter
+
+	return cijs
+	
 
 
 def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, **properties: bool) -> None:

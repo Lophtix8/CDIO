@@ -9,7 +9,7 @@ from fracture_md import build, read_config
 
 logger = logging.getLogger(__name__)
 
-def prepare_and_queue(conf_path : str, fractured=True, unfractured=False):
+def prepare_and_queue(conf_path : str, project_dir="jobs", fractured=True, unfractured=False):
     """
     Function that combines prepare_jobs and queue_jobs. It will queue the jobs prepared with the given config file path.
 
@@ -20,7 +20,7 @@ def prepare_and_queue(conf_path : str, fractured=True, unfractured=False):
         fractured=True (bool): Whether to prepare jobs for the poscars with fractures.
         unfractured=False (bool): Whether to prepare jobs for the poscars without fractures.
     """
-    job_paths = prepare_jobs(conf_path, fractured=fractured, unfractured=unfractured)
+    job_paths = prepare_jobs(conf_path, project_dir=project_dir, fractured=fractured, unfractured=unfractured)
     queue_jobs(job_paths)
 
 def queue_jobs(job_paths : list[str] = []):
