@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("read_config")
 
 def main(config_file):
     """The main function of the program. It reads the config file and creates

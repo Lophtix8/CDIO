@@ -5,13 +5,16 @@ from ase.md.langevin import Langevin
 from ase import units
 from asap3 import Trajectory
 
-import read_config
-import sys, os, yaml
-import numpy as np
 import logging
+import logging.config
+from fracture_md import setup_logging
+import read_config
+import sys, os
+import numpy as np
 from ase.calculators.kim.kim import KIM
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("md")
+    
 
 def calcenergy(a):
     """A function that calculates the total, potential and kinetic energy as well as the 
@@ -58,7 +61,6 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
         crystal.calc = calc
     except:
         logger.error("Could not find the potential-id that was given.")
-        print(potential_id)
         return
     
     # Set the momenta corresponding to T=300K
@@ -120,6 +122,5 @@ if __name__ == "__main__":
     strain_rate = config_data['strain_rate']
     relaxation_iterations = config_data['relaxation_iterations']
     t_interval = config_data['t_interval']
-
-
+    setup_logging.setup_logging('md_logging.conf')
     run_md(poscar_path, temp, iterations, strain_rate, strain_interval, t_interval, relaxation_iterations, potential_id)
