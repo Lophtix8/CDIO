@@ -151,7 +151,7 @@ def calc_elastic_tensor(traj_properties: list[dict[str, float]], data_points: li
 
 	delta = stop-start
 	
-	cijs = numpy.array((0, 0, 0, 0, 0, 0))
+	cijs = numpy.array((0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
 	for i in range(start, stop, 1):
 		cijs+=stress_derivative[i]
 
