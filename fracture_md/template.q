@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-#SBATCH -J testjob
+#SBATCH -J tfya99_fracture_md
 #SBATCH -A liu-compute-2024-33
 #SBATCH --reservation devel
-#SBATCH -t 00:05:00
+#SBATCH -t 00:30:00
 #SBATCH -N 1
 #SBATCH -n 32
 #SBATCH --exclusive

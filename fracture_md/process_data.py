@@ -43,9 +43,10 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 
 	traj_properties = []
 
+	print(f"Reading trajectory file for: {os.path.basename(traj_filename).rstrip('.traj')}")
 
 	calc = KIM(potential_id)
-	
+    
 	atom_num = len(traj[0])
 	starting_z = traj[0].cell[2,2]
 
@@ -139,7 +140,7 @@ def read_from_pkl(pkl_path: str) -> list[dict[str, float]]:
 
 def calc_elastic_tensor(traj_properties: list[dict[str, float]], strain_interval=0.1):
 	if traj_properties[-1]['strain'] < strain_interval:
-		raise ValueError("Trajectory does not include desired strain interval.")
+		raise ValueError(f"Trajectory does not include desired strain interval. {traj_properties[-1]['strain']} !< {strain_interval}")
 	
 	cijs = [0, 0, 0, 0, 0,  0]
 	counter = 0
