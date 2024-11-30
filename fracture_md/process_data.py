@@ -3,9 +3,7 @@ from ase import Atoms
 from ase import units
 from ase.calculators.kim.kim import KIM
 from matplotlib import pyplot as plt
-import pickle
-import os
-import yaml
+import pickle, os, yaml ,numpy
 
 property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
 
@@ -138,31 +136,27 @@ def read_from_pkl(pkl_path: str) -> list[dict[str, float]]:
 	file.close()
 	return traj_properties
 
-def calc_elastic_tensor(traj_properties: list[dict[str, float]], strain_interval=0.1):
-	if traj_properties[-1]['strain'] < strain_interval:
-		raise ValueError(f"Trajectory does not include desired strain interval. {traj_properties[-1]['strain']} !< {strain_interval}")
+def calc_elastic_tensor(traj_properties: list[dict[str, float]], data_points: list[int]=[0,10]):
 	
-	cijs = [0, 0, 0, 0, 0,  0]
-	counter = 0
-	for traj in traj_properties:
-		strain = traj["strain"]
-		if strain < 0.0001:
-			continue
+	if len(data_points) > 2 or type(data_points[0]) != int or type(data_points[1]) != int:
+		raise TypeError("data_points has to be a 2-dimensional vector of integers.")
 
-		if traj['strain'] > strain_interval:
-			break
-		counter += 1
-		stress = traj['stress']
-		for i in range(6):
-			# The non-diagonal elastic constants are half the voigt notation ones
-			if i > 2:
-				cijs[i] += stress[i]/(strain)
-			else:
-				cijs[i] += stress[i]/strain
+	stress_derivative = []
 
-	for i in range(6): 
-		cijs[i]/=counter
+	for i in range(len(traj_properties)-1):
+		stress_derivative.append((traj_properties[i+1]-traj_properties[i])/traj_properties[i]['strain'])
+	
+	start = data_points[0]
+	stop = data_points[1]
 
+	delta = stop-start
+	
+	cijs = numpy.array((0, 0, 0, 0, 0, 0))
+	for i in range(start, stop, 1):
+		cijs+=stress_derivative[i]
+
+	cijs/=delta
+	
 	return cijs
 	
 
