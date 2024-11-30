@@ -60,7 +60,7 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
         calc = KIM(potential_id)
         crystal.calc = calc
     except:
-        logger.error("Could not find the potential-id that was given.")
+        logger.error(f"Could not find the potential-id '{potential_id}' that was given.")
         return
     
     # Set the momenta corresponding to T=300K
