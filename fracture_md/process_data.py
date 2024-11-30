@@ -142,12 +142,15 @@ def calc_elastic_tensor(traj_properties: list[dict[str, float]], data_points: li
 		raise TypeError("data_points has to be a 2-dimensional vector of integers.")
 
 	stress_derivative = []
-
-	for i in range(len(traj_properties)-1):
-		stress_derivative.append((traj_properties[i+1]['stress']-traj_properties[i]['stress'])/traj_properties[i]['strain'])
-	
 	start = data_points[0]
 	stop = data_points[1]
+	for i in range(len(traj_properties)-1):
+		strain = traj_properties[i]['strain']
+		if strain == 0:
+			start += 1
+			stress_derivative.append(0)
+		else:
+			stress_derivative.append((traj_properties[i+1]['stress']-traj_properties[i]['stress'])/strain)	
 
 	delta = stop-start
 	
