@@ -1,4 +1,4 @@
-- vasp_files: [TiN.poscar]
+- vasp_files: [Al.poscar]
   x_scalings: [10]
   y_scalings: [10]
   z_scalings: [10]
