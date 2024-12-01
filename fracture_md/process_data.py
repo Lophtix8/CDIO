@@ -138,13 +138,13 @@ def read_from_pkl(pkl_path: str) -> list[dict[str, float]]:
 
 def calc_elastic_tensor(traj_properties: list[dict[str, float]], strain_interval: list[int]=[0,0.05]):
 	
-	if len(strain_interval) > 2 or type(strain_interval[0]) != float or type(strain_interval[1]) != float:
-		raise TypeError("data_points has to be a 2-dimensional vector of integers.")
+	if len(strain_interval) > 2:
+		raise TypeError("data_points has to be a 2-dimensional vector of numbers.")
 
 	if strain_interval[0] < 0:
 		raise ValueError("Start of strain inverval cannot be below zero.")
 
-	if strain_interval[1] > strain_interval[0]:
+	if strain_interval[0] > strain_interval[1]:
 		raise ValueError("Start of strain interval cannot be above end of strain interval.")
 	
 	start = 0
