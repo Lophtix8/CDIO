@@ -136,18 +136,29 @@ def read_from_pkl(pkl_path: str) -> list[dict[str, float]]:
 	file.close()
 	return traj_properties
 
-def calc_elastic_tensor(traj_properties: list[dict[str, float]], data_points: list[int]=[0,10]):
+def calc_elastic_tensor(traj_properties: list[dict[str, float]], strain_interval: list[int]=[0,0.05]):
 	
-	if len(data_points) > 2 or type(data_points[0]) != int or type(data_points[1]) != int:
+	if len(strain_interval) > 2 or type(strain_interval[0]) != float or type(strain_interval[1]) != float:
 		raise TypeError("data_points has to be a 2-dimensional vector of integers.")
 
-	if (data_points[0]) > len(traj_properties) or data_points[1] > len(traj_properties):
-		return
+	if strain_interval[0] < 0:
+		raise ValueError("Start of strain inverval cannot be below zero.")
 
-	stress_derivative = []
-	start = data_points[0]
-	stop = data_points[1]
+	if strain_interval[1] > strain_interval[0]:
+		raise ValueError("Start of strain interval cannot be above end of strain interval.")
 	
+	start = 0
+	stop = 0
+	for i in range(len(traj_properties)):
+		strain = traj_properties[i]['strain']
+		if strain <= strain_interval[0]:
+			start = i
+		
+		if strain > strain_interval[1]:
+			break
+		
+		stop = i
+
 	delta_stress = traj_properties[stop]['stress']-traj_properties[start]['stress']
 	delta_strain = traj_properties[stop]['strain']-traj_properties[start]['strain']
 
