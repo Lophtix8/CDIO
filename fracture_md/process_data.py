@@ -147,25 +147,11 @@ def calc_elastic_tensor(traj_properties: list[dict[str, float]], data_points: li
 	stress_derivative = []
 	start = data_points[0]
 	stop = data_points[1]
-	print(len(traj_properties))
-	for i in range(len(traj_properties)-1):
-		delta_strain = traj_properties[i+1]['strain']-traj_properties[i]['strain']
-		delta_stress = traj_properties[i+1]['stress']-traj_properties[i]['stress']
-		if delta_strain == 0:
-			start += 1
-			print(f"Strain: {delta_strain}")
-			stress_derivative.append(0)
-		else:
-			stress_derivative.append(delta_stress/delta_strain)
+	
+	delta_stress = traj_properties[stop]['stress']-traj_properties[start]['stress']
+	delta_strain = traj_properties[stop]['strain']-traj_properties[start]['strain']
 
-	delta = stop-start
-	print(delta)
-	cijs = numpy.array((0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
-	for i in range(start, stop):
-		print(f"Adding: {stress_derivative[i]}")
-		cijs+=stress_derivative[i]
-
-	cijs/=delta
+	cijs = delta_stress/delta_strain
 
 	return cijs
 	
