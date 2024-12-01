@@ -141,21 +141,28 @@ def calc_elastic_tensor(traj_properties: list[dict[str, float]], data_points: li
 	if len(data_points) > 2 or type(data_points[0]) != int or type(data_points[1]) != int:
 		raise TypeError("data_points has to be a 2-dimensional vector of integers.")
 
+	if (data_points[0]) > len(traj_properties) or data_points[1] > len(traj_properties):
+		return
+
 	stress_derivative = []
 	start = data_points[0]
 	stop = data_points[1]
+	print(len(traj_properties))
 	for i in range(len(traj_properties)-1):
-		strain = traj_properties[i]['strain']
-		if strain == 0:
+		delta_strain = traj_properties[i+1]['strain']-traj_properties[i]['strain']
+		delta_stress = traj_properties[i+1]['stress']-traj_properties[i]['stress']
+		if delta_strain == 0:
 			start += 1
+			print(f"Strain: {delta_strain}")
 			stress_derivative.append(0)
 		else:
-			stress_derivative.append((traj_properties[i+1]['stress']-traj_properties[i]['stress'])/strain)	
+			stress_derivative.append(delta_stress/delta_strain)
 
 	delta = stop-start
-	
+	print(delta)
 	cijs = numpy.array((0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
-	for i in range(start, stop, 1):
+	for i in range(start, stop):
+		print(f"Adding: {stress_derivative[i]}")
 		cijs+=stress_derivative[i]
 
 	cijs/=delta
