@@ -168,7 +168,7 @@ def calc_elastic_tensor(traj_properties: list[dict[str, float]], strain_interval
 	
 
 
-def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, **properties: bool) -> None:
+def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, strain_interval: list[float]=[0,0], **properties: bool) -> None:
 	"""
 	Creates plot(s) of parameters with respect to iteration step.
 
@@ -194,6 +194,11 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 				directions = ["xx", "yy", "zz", "yz", "xz", "xy"]
 				for direction in directions:
 					legends.append(parameter+"."+direction)
+				if strain_interval[1] != 0:
+					plt.axvline(x = strain_interval[0])
+					plt.axvline(x = strain_interval[1])
+					plt.text(0, 0, f"Stress in GPa: {calc_elastic_tensor(traj_properties, strain_interval=strain_interval)[2]}")
+					
 			else:
 				legends.append(parameter)
 
