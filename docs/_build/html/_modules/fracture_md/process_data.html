@@ -33,11 +33,7 @@
 <span></span><span class="kn">from</span> <span class="nn">ase.io.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
 <span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atoms</span>
 <span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">units</span>
-<span class="kn">from</span> <span class="nn">ase.calculators.kim.kim</span> <span class="kn">import</span> <span class="n">KIM</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
-<span class="kn">import</span> <span class="nn">pickle</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">yaml</span> <span class="o">,</span><span class="nn">numpy</span>
-
-<span class="n">property_units</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;ekin&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span> <span class="s2">&quot;epot&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span> <span class="s2">&quot;etot&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span> <span class="s2">&quot;stress&quot;</span><span class="p">:</span> <span class="s2">&quot;GPa&quot;</span><span class="p">}</span>
 
 <div class="viewcode-block" id="process_data">
 <a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.process_data">[docs]</a>
@@ -54,7 +50,7 @@
 
 <div class="viewcode-block" id="read_traj_file">
 <a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.read_traj_file">[docs]</a>
-<span class="k">def</span> <span class="nf">read_traj_file</span><span class="p">(</span><span class="n">traj_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">potential_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="k">def</span> <span class="nf">read_traj_file</span><span class="p">(</span><span class="n">traj_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
 <span class="w">	</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">	Reads a trajectory file and returns a list of dictionaries containing the parameters, or the pure trajectory object.</span>
 <span class="sd">	Currently implemented properties include kinetic energy, potential energy, total energy and temperature.</span>
@@ -76,25 +72,19 @@
 	<span class="k">except</span><span class="p">:</span>
 		<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Trajectory file not found.&quot;</span><span class="p">)</span>
 
+	<span class="c1"># If not pure, process the trajectory data.</span>
 	<span class="n">traj_properties</span> <span class="o">=</span> <span class="p">[]</span>
 
-	<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading trajectory file for: </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">traj_filename</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;.traj&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-	<span class="n">calc</span> <span class="o">=</span> <span class="n">KIM</span><span class="p">(</span><span class="n">potential_id</span><span class="p">)</span>
-    
-	<span class="n">atom_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-	<span class="n">starting_z</span> <span class="o">=</span> <span class="n">traj</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
-
+	<span class="kn">from</span> <span class="nn">asap3</span> <span class="kn">import</span> <span class="n">EMT</span>
 	<span class="k">for</span> <span class="n">atoms</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">:</span>
 		<span class="c1"># Properties in traj object.</span>
-		<span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">calc</span>
-		<span class="n">curr_z</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+		<span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">EMT</span><span class="p">()</span>
+		<span class="n">atom_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 		<span class="n">traj_properties</span><span class="o">.</span><span class="n">append</span> \
 			<span class="p">({</span><span class="s2">&quot;ekin&quot;</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span><span class="o">/</span><span class="n">atom_num</span><span class="p">,</span>
 	 		  <span class="s2">&quot;epot&quot;</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span><span class="o">/</span><span class="n">atom_num</span><span class="p">,</span>
 			  <span class="s2">&quot;etot&quot;</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_total_energy</span><span class="p">()</span><span class="o">/</span><span class="n">atom_num</span><span class="p">,</span>
-			  <span class="s2">&quot;stress&quot;</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_stress</span><span class="p">()</span><span class="o">/</span><span class="n">units</span><span class="o">.</span><span class="n">GPa</span><span class="p">,</span>
-			  <span class="s2">&quot;strain&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">curr_z</span><span class="o">/</span><span class="n">starting_z</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">})</span>
+			  <span class="s2">&quot;stress&quot;</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_stress</span><span class="p">()})</span>
 
 		<span class="c1"># Derived properties.</span>
 		<span class="n">traj_properties</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">traj_properties</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;ekin&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="p">)</span>
@@ -102,131 +92,9 @@
 	<span class="k">return</span> <span class="n">traj_properties</span></div>
 
 
-<div class="viewcode-block" id="get_results_dirs">
-<a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.get_results_dirs">[docs]</a>
-<span class="k">def</span> <span class="nf">get_results_dirs</span><span class="p">(</span><span class="n">job_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-	<span class="n">results_dirs</span> <span class="o">=</span> <span class="p">[]</span>
-	<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">job_dir</span><span class="p">):</span>
-		<span class="n">job_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="n">job_dir</span><span class="p">)</span>
-
-	<span class="n">material_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">job_dir</span><span class="p">)</span> \
-				   	 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="n">x</span><span class="p">))]</span>
-	
-	<span class="k">for</span> <span class="n">material_dir</span> <span class="ow">in</span> <span class="n">material_dirs</span><span class="p">:</span>
-		<span class="n">results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">material_dir</span><span class="p">,</span> <span class="s2">&quot;Simulation_results&quot;</span><span class="p">)</span>
-		
-		<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">results_dir</span><span class="p">):</span>
-			<span class="k">continue</span> <span class="c1"># In case the simulation has not been run yet</span>
-		<span class="n">results_dirs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">results_dir</span><span class="p">)</span>
-
-	<span class="k">return</span> <span class="n">results_dirs</span></div>
-
-
-<div class="viewcode-block" id="write_all_to_pkl">
-<a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.write_all_to_pkl">[docs]</a>
-<span class="k">def</span> <span class="nf">write_all_to_pkl</span><span class="p">(</span><span class="n">job_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-	<span class="n">results_dirs</span> <span class="o">=</span> <span class="n">get_results_dirs</span><span class="p">(</span><span class="n">job_dir</span><span class="p">)</span>
-	<span class="k">for</span> <span class="n">results_dir</span> <span class="ow">in</span> <span class="n">results_dirs</span><span class="p">:</span>
-		<span class="n">trajectory_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">results_dir</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">results_dir</span><span class="p">)</span> \
-					  		<span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.traj&quot;</span><span class="p">)]</span>
-		<span class="k">for</span> <span class="n">trajectory_path</span> <span class="ow">in</span> <span class="n">trajectory_paths</span><span class="p">:</span>
-			
-			<span class="c1">### Read the corresponding config file to get corresponding OpenKIM potential ###</span>
-			<span class="n">crystal_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">trajectory_path</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;.traj&#39;</span><span class="p">)</span>
-			<span class="n">crystal_properties</span> <span class="o">=</span> <span class="n">crystal_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
-			
-			<span class="n">temp</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-			<span class="k">if</span> <span class="n">crystal_properties</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;fractured&quot;</span><span class="p">:</span>
-				<span class="n">temp</span> <span class="o">=</span> <span class="n">crystal_properties</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-			<span class="k">else</span><span class="p">:</span>
-				<span class="n">temp</span> <span class="o">=</span> <span class="n">crystal_properties</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-			
-			<span class="n">conf_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">results_dir</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/Simulation_results&quot;</span><span class="p">),</span> <span class="n">temp</span><span class="p">,</span> <span class="n">crystal_name</span><span class="o">+</span><span class="s2">&quot;.yaml&quot;</span><span class="p">)</span>
-			<span class="n">config_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_file_path</span><span class="p">)</span>
-			<span class="n">config_data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">config_file</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-			<span class="n">config_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-			<span class="c1">### End config reading ###</span>
-
-			<span class="n">trajectory_data</span> <span class="o">=</span> <span class="n">read_traj_file</span><span class="p">(</span><span class="n">trajectory_path</span><span class="p">,</span> <span class="n">config_data</span><span class="p">[</span><span class="s2">&quot;potential&quot;</span><span class="p">])</span>
-			<span class="n">pickle_path</span> <span class="o">=</span> <span class="n">trajectory_path</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;.traj&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.pkl&quot;</span>
-			<span class="n">write_to_pkl</span><span class="p">(</span><span class="n">trajectory_data</span><span class="p">,</span> <span class="n">pickle_path</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="read_all_from_pkl">
-<a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.read_all_from_pkl">[docs]</a>
-<span class="k">def</span> <span class="nf">read_all_from_pkl</span><span class="p">(</span><span class="n">job_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
-	<span class="n">results_dirs</span> <span class="o">=</span> <span class="n">get_results_dirs</span><span class="p">(</span><span class="n">job_dir</span><span class="p">)</span>
-	<span class="n">pickle_paths</span> <span class="o">=</span> <span class="p">[]</span>
-	<span class="k">for</span> <span class="n">results_dir</span> <span class="ow">in</span> <span class="n">results_dirs</span><span class="p">:</span>
-
-		<span class="n">pickle_paths</span> <span class="o">+=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">results_dir</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">results_dir</span><span class="p">)</span> \
-				 			<span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.pkl&#39;</span><span class="p">)]</span>
-	
-	<span class="n">crystal_traj_properties</span> <span class="o">=</span> <span class="p">{}</span>
-	<span class="k">for</span> <span class="n">pickle_path</span> <span class="ow">in</span> <span class="n">pickle_paths</span><span class="p">:</span>
-		<span class="n">crystal_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">pickle_path</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;.pkl&#39;</span><span class="p">)</span>
-		<span class="n">traj_properties</span> <span class="o">=</span> <span class="n">read_from_pkl</span><span class="p">(</span><span class="n">pickle_path</span><span class="p">)</span>
-		<span class="n">crystal_traj_properties</span><span class="p">[</span><span class="n">crystal_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">traj_properties</span>
-
-	<span class="k">return</span> <span class="n">crystal_traj_properties</span></div>
-
-
-<div class="viewcode-block" id="write_to_pkl">
-<a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.write_to_pkl">[docs]</a>
-<span class="k">def</span> <span class="nf">write_to_pkl</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">pkl_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-	<span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">pkl_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> 
-	<span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-	<span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
-
-
-<div class="viewcode-block" id="read_from_pkl">
-<a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.read_from_pkl">[docs]</a>
-<span class="k">def</span> <span class="nf">read_from_pkl</span><span class="p">(</span><span class="n">pkl_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
-	<span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">pkl_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
-	<span class="n">traj_properties</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-	<span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-	<span class="k">return</span> <span class="n">traj_properties</span></div>
-
-
-<div class="viewcode-block" id="calc_elastic_tensor">
-<a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.calc_elastic_tensor">[docs]</a>
-<span class="k">def</span> <span class="nf">calc_elastic_tensor</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">strain_interval</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.05</span><span class="p">]):</span>
-	
-	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">strain_interval</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-		<span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;data_points has to be a 2-dimensional vector of numbers.&quot;</span><span class="p">)</span>
-
-	<span class="k">if</span> <span class="n">strain_interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-		<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Start of strain inverval cannot be below zero.&quot;</span><span class="p">)</span>
-
-	<span class="k">if</span> <span class="n">strain_interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">strain_interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-		<span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Start of strain interval cannot be above end of strain interval.&quot;</span><span class="p">)</span>
-	
-	<span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
-	<span class="n">stop</span> <span class="o">=</span> <span class="mi">0</span>
-	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">)):</span>
-		<span class="n">strain</span> <span class="o">=</span> <span class="n">traj_properties</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;strain&#39;</span><span class="p">]</span>
-		<span class="k">if</span> <span class="n">strain</span> <span class="o">&lt;=</span> <span class="n">strain_interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-			<span class="n">start</span> <span class="o">=</span> <span class="n">i</span>
-		
-		<span class="k">if</span> <span class="n">strain</span> <span class="o">&gt;</span> <span class="n">strain_interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-			<span class="k">break</span>
-		
-		<span class="n">stop</span> <span class="o">=</span> <span class="n">i</span>
-
-	<span class="n">delta_stress</span> <span class="o">=</span> <span class="n">traj_properties</span><span class="p">[</span><span class="n">stop</span><span class="p">][</span><span class="s1">&#39;stress&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">traj_properties</span><span class="p">[</span><span class="n">start</span><span class="p">][</span><span class="s1">&#39;stress&#39;</span><span class="p">]</span>
-	<span class="n">delta_strain</span> <span class="o">=</span> <span class="n">traj_properties</span><span class="p">[</span><span class="n">stop</span><span class="p">][</span><span class="s1">&#39;strain&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">traj_properties</span><span class="p">[</span><span class="n">start</span><span class="p">][</span><span class="s1">&#39;strain&#39;</span><span class="p">]</span>
-
-	<span class="n">cijs</span> <span class="o">=</span> <span class="n">delta_stress</span><span class="o">/</span><span class="n">delta_strain</span>
-
-	<span class="k">return</span> <span class="n">cijs</span></div>
-
-	
-
-
 <div class="viewcode-block" id="visualize">
 <a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.visualize">[docs]</a>
-<span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">combined_plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strain_interval</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">properties</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">combined_plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">properties</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">	</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">	Creates plot(s) of parameters with respect to iteration step.</span>
 
@@ -235,15 +103,12 @@
 <span class="sd">		combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.</span>
 <span class="sd">		properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.</span>
 <span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">property_units</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;ekin&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span> <span class="s2">&quot;epot&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span> <span class="s2">&quot;etot&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span> <span class="s2">&quot;stress&quot;</span><span class="p">:</span> <span class="s2">&quot;GPa&quot;</span><span class="p">}</span>
 
 	<span class="n">steps</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">))</span>
-	<span class="n">strains</span> <span class="o">=</span> <span class="p">[]</span>
-
-	<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">:</span>
-		<span class="n">strains</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">[</span><span class="n">step</span><span class="p">][</span><span class="s1">&#39;strain&#39;</span><span class="p">])</span>
 	
 	<span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
-	<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;strain&quot;</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;10*steps&quot;</span><span class="p">)</span>
 	<span class="n">legends_comb</span> <span class="o">=</span> <span class="p">[]</span>
 	<span class="k">for</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">include</span> <span class="ow">in</span> <span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 		<span class="n">legends</span> <span class="o">=</span> <span class="p">[]</span>
@@ -252,11 +117,6 @@
 				<span class="n">directions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;xx&quot;</span><span class="p">,</span> <span class="s2">&quot;yy&quot;</span><span class="p">,</span> <span class="s2">&quot;zz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">]</span>
 				<span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="n">directions</span><span class="p">:</span>
 					<span class="n">legends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter</span><span class="o">+</span><span class="s2">&quot;.&quot;</span><span class="o">+</span><span class="n">direction</span><span class="p">)</span>
-				<span class="k">if</span> <span class="n">strain_interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-					<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">strain_interval</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-					<span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">strain_interval</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-					<span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Stress in GPa: </span><span class="si">{</span><span class="n">calc_elastic_tensor</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">,</span><span class="w"> </span><span class="n">strain_interval</span><span class="o">=</span><span class="n">strain_interval</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-					
 			<span class="k">else</span><span class="p">:</span>
 				<span class="n">legends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
 
@@ -264,7 +124,7 @@
 			<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">:</span>
 				<span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">[</span><span class="n">step</span><span class="p">][</span><span class="n">parameter</span><span class="p">])</span>
 
-			<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">strains</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+			<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 			
 			<span class="k">if</span> <span class="ow">not</span> <span class="n">combined_plot</span><span class="p">:</span>
 				<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="n">parameter</span><span class="p">])</span>

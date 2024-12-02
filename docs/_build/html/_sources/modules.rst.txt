@@ -5,5 +5,3 @@ CDIO
    :maxdepth: 4
 
    fracture_md
-   prepare
-   setup

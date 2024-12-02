@@ -32,12 +32,11 @@
   <h1>Source code for fracture_md.build</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">shutil</span>
 <span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">write</span>
-<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atoms</span>
 <span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">abspath</span><span class="p">,</span> <span class="n">dirname</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;build&quot;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="n">DIR_NAME</span> <span class="o">=</span> <span class="n">dirname</span><span class="p">(</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
 
@@ -69,39 +68,47 @@
     <span class="n">supercell</span> <span class="o">=</span> <span class="n">unitcell</span><span class="o">*</span><span class="p">(</span><span class="n">x_scaling</span><span class="p">,</span> <span class="n">y_scaling</span><span class="p">,</span> <span class="n">z_scaling</span><span class="p">)</span>
     <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">material_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">x_scaling</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">y_scaling</span><span class="si">}</span><span class="s2">x</span><span class="si">{</span><span class="n">z_scaling</span><span class="si">}</span><span class="s2">.poscar&quot;</span> 
     <span class="n">write</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span><span class="n">filename</span><span class="p">),</span> <span class="n">supercell</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;vasp&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">supercell</span></div>
+    <span class="k">return</span> <span class="n">filename</span></div>
 
-
+    
 <div class="viewcode-block" id="construct_crack">
 <a class="viewcode-back" href="../../fracture_md.html#fracture_md.build.construct_crack">[docs]</a>
-<span class="k">def</span> <span class="nf">construct_crack</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">supercell</span><span class="p">,</span> <span class="n">custom_fracture</span><span class="p">,</span> <span class="n">x_fracture</span><span class="p">,</span> <span class="n">y_fracture</span><span class="p">,</span> <span class="n">z_fracture</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">construct_crack</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">custom_fracture</span><span class="p">,</span> <span class="n">x_fracture</span><span class="p">,</span> <span class="n">y_fracture</span><span class="p">,</span> <span class="n">z_fracture</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Takes the previously created supercells and adds a crack in them, then names them accordingly.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dirpath (str): The path to where we will save the poscar-file.</span>
 <span class="sd">        filename (str): Name of the supercell.</span>
-<span class="sd">        supercell (Atoms()): An Atoms()-object of the supercell to put a crack into.</span>
 <span class="sd">        custom_fracture (bool): Not implemented yet.</span>
 <span class="sd">        x_fracture (list): Interval of atoms to remove in x-direction.</span>
 <span class="sd">        y_fracture (list): Interval of atoms to remove in y-direction.</span>
 <span class="sd">        z_fracture (list): Interval of atoms to remove in z-direction.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fractured_supercell</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">()</span>
-    <span class="n">fractured_supercell</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">supercell</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
+
     <span class="k">if</span> <span class="n">custom_fracture</span><span class="p">:</span>
         <span class="k">return</span>
-    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">supercell</span><span class="p">:</span>
-
-        <span class="n">position</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">scaled_position</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">x_fracture</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">x_fracture</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>\
-        <span class="ow">and</span> <span class="p">(</span><span class="n">y_fracture</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">y_fracture</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>\
-        <span class="ow">and</span> <span class="p">(</span><span class="n">z_fracture</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">position</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">z_fracture</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-            <span class="k">continue</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">fractured_supercell</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
     
-    <span class="n">new_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;fractured_</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span> 
-    <span class="n">write</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span><span class="n">new_filename</span><span class="p">),</span> <span class="n">fractured_supercell</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;vasp&quot;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">direct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span> <span class="k">as</span> <span class="n">supercell</span><span class="p">:</span>
+        <span class="n">supercell_lines</span> <span class="o">=</span> <span class="n">supercell</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    
+    <span class="n">lines_to_remove</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">supercell_lines</span><span class="p">[</span><span class="mi">8</span><span class="p">:]:</span> <span class="c1">#the coordinates start on line 8 in poscar-files</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">x_fracture</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">x_fracture</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>\
+        <span class="ow">and</span> <span class="p">(</span><span class="n">y_fracture</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">y_fracture</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>\
+        <span class="ow">and</span> <span class="p">(</span><span class="n">z_fracture</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">z_fracture</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">lines_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines_to_remove</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">supercell_lines</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="n">supercell_lines</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">supercell_lines</span><span class="p">[</span><span class="mi">8</span><span class="p">:]))</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="c1">#the number of atoms is always on line 6 in poscar-files</span>
+    <span class="n">new_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;fractured_</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">final_build</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span><span class="n">new_filename</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">final_build</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">supercell_lines</span><span class="p">)</span>
+    <span class="n">final_build</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
     
 
@@ -137,9 +144,9 @@
             <span class="n">z_fracture</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;fracture&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
             <span class="n">custom_fracture</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;custom_fracture&quot;</span><span class="p">]</span>
             
-            <span class="n">supercell_filename</span><span class="p">,</span> <span class="n">supercell</span> <span class="o">=</span> <span class="n">construct_supercell</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">unitcell</span><span class="p">,</span> <span class="n">x_scaling</span><span class="p">,</span> <span class="n">y_scaling</span><span class="p">,</span> <span class="n">z_scaling</span><span class="p">)</span>
+            <span class="n">supercell_filename</span> <span class="o">=</span> <span class="n">construct_supercell</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">unitcell</span><span class="p">,</span> <span class="n">x_scaling</span><span class="p">,</span> <span class="n">y_scaling</span><span class="p">,</span> <span class="n">z_scaling</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">supercell_filename</span><span class="p">:</span>
-                <span class="n">construct_crack</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">supercell_filename</span><span class="p">,</span> <span class="n">supercell</span><span class="p">,</span> <span class="n">custom_fracture</span><span class="p">,</span> <span class="n">x_fracture</span><span class="p">,</span> <span class="n">y_fracture</span><span class="p">,</span> <span class="n">z_fracture</span><span class="p">)</span>
+                <span class="n">construct_crack</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">supercell_filename</span><span class="p">,</span> <span class="n">custom_fracture</span><span class="p">,</span> <span class="n">x_fracture</span><span class="p">,</span> <span class="n">y_fracture</span><span class="p">,</span> <span class="n">z_fracture</span><span class="p">)</span>
                 <span class="n">unfractured_filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">supercell_filename</span><span class="p">)</span>
                 <span class="n">fractured_filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;fractured_</span><span class="si">{</span><span class="n">supercell_filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">file_paths</span><span class="p">[</span><span class="s1">&#39;unfractured&#39;</span><span class="p">][</span><span class="n">unfractured_filepath</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span>
