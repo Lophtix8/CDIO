@@ -34,7 +34,7 @@ def calcenergy(a):
     return epot, ekin, int_T, etot
     
 
-def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, strain_interval: int, t_interval: int, relaxation_iterations: int, potential_id: str):
+def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, strain_interval: int, t_interval: int, relaxation_iterations: int, potential_id: str, stress_plane: list[int]):
 
     """This function runs a molecular dynamics simulation and deposits the result in the 
     folder named "Simulation_results".
@@ -84,7 +84,8 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     def apply_incremental_strain():
         """Function that applies incremental strain in the z-direction."""
         strain_matrix = np.eye(3)  # Identity matrix
-        strain_matrix[2, 2] += strain_rate  # Apply strain in z-direction
+        for i in range(3):
+            strain_matrix[i, i] += stress_plane[i]*strain_rate  # Apply strain in z-direction
         crystal.set_cell(crystal.cell @ strain_matrix, scale_atoms=True)  # Scale cell and atom positions
     
     # Attach strain application to dynamics at every step
@@ -122,5 +123,6 @@ if __name__ == "__main__":
     strain_rate = config_data['strain_rate']
     relaxation_iterations = config_data['relaxation_iterations']
     t_interval = config_data['t_interval']
+    stress_plane = [int(x) for x in config_data['stress_plane']]
     setup_logging.setup_logging('md_logging.conf')
-    run_md(poscar_path, temp, iterations, strain_rate, strain_interval, t_interval, relaxation_iterations, potential_id)
+    run_md(poscar_path, temp, iterations, strain_rate, strain_interval, t_interval, relaxation_iterations, potential_id, stress_plane)
