@@ -3,6 +3,9 @@ from ase import Atoms
 from ase import units
 from ase.calculators.kim.kim import KIM
 from matplotlib import pyplot as plt
+import pickle, os, yaml ,numpy
+
+property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
 
 def process_data(traj_filename: str):
 	"""
@@ -38,9 +41,10 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 
 	traj_properties = []
 
+	print(f"Reading trajectory file for: {os.path.basename(traj_filename).rstrip('.traj')}")
 
 	calc = KIM(potential_id)
-	
+    
 	atom_num = len(traj[0])
 	starting_z = traj[0].cell[2,2]
 
@@ -52,15 +56,119 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 			({"ekin": atoms.get_kinetic_energy()/atom_num,
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num,
-			  "stress": atoms.get_stress(),
-			  "strain": curr_z/starting_z})
+			  "stress": atoms.get_stress()/units.GPa,
+			  "strain": (curr_z/starting_z)-1})
 
 		# Derived properties.
 		traj_properties[-1]["temperature"] = traj_properties[-1]["ekin"] / (1.5 * units.kB)
 
 	return traj_properties
 
-def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool = False, **properties: bool) -> None:
+def get_results_dirs(job_dir: str) -> list[str]:
+	results_dirs = []
+	if not os.path.isabs(job_dir):
+		job_dir = os.path.join(os.getcwd(), job_dir)
+
+	material_dirs = [os.path.join(job_dir, x) for x in os.listdir(job_dir) \
+				   	 if os.path.isdir(os.path.join(job_dir, x))]
+	
+	for material_dir in material_dirs:
+		results_dir = os.path.join(material_dir, "Simulation_results")
+		
+		if not os.path.isdir(results_dir):
+			continue # In case the simulation has not been run yet
+		results_dirs.append(results_dir)
+
+	return results_dirs
+
+def write_all_to_pkl(job_dir: str):
+	results_dirs = get_results_dirs(job_dir)
+	for results_dir in results_dirs:
+		trajectory_paths = [os.path.join(results_dir, x) for x in os.listdir(results_dir) \
+					  		if x.endswith(".traj")]
+		for trajectory_path in trajectory_paths:
+			
+			### Read the corresponding config file to get corresponding OpenKIM potential ###
+			crystal_name = os.path.basename(trajectory_path).rstrip('.traj')
+			crystal_properties = crystal_name.split('_')
+			
+			temp = ""
+			if crystal_properties[0] == "fractured":
+				temp = crystal_properties[3]
+			else:
+				temp = crystal_properties[2]
+			
+			conf_file_path = os.path.join(results_dir.rstrip("/Simulation_results"), temp, crystal_name+".yaml")
+			config_file = open(conf_file_path)
+			config_data = yaml.safe_load(config_file)[0]
+			config_file.close()
+			### End config reading ###
+
+			trajectory_data = read_traj_file(trajectory_path, config_data["potential"])
+			pickle_path = trajectory_path.rstrip('.traj') + ".pkl"
+			write_to_pkl(trajectory_data, pickle_path)
+
+
+def read_all_from_pkl(job_dir: str) -> dict[str, list[str, float]]:
+	results_dirs = get_results_dirs(job_dir)
+	pickle_paths = []
+	for results_dir in results_dirs:
+
+		pickle_paths += [os.path.join(results_dir, x) for x in os.listdir(results_dir) \
+				 			if x.endswith('.pkl')]
+	
+	crystal_traj_properties = {}
+	for pickle_path in pickle_paths:
+		crystal_name = os.path.basename(pickle_path).strip('.pkl')
+		traj_properties = read_from_pkl(pickle_path)
+		crystal_traj_properties[crystal_name] = traj_properties
+
+	return crystal_traj_properties
+
+def write_to_pkl(traj_properties: list[dict[str, float]], pkl_path: str) -> None:
+	file = open(pkl_path, 'wb') 
+	pickle.dump(traj_properties, file)
+	file.close()
+
+def read_from_pkl(pkl_path: str) -> list[dict[str, float]]:
+	file = open(pkl_path, 'rb')
+	traj_properties = pickle.load(file)
+	file.close()
+	return traj_properties
+
+def calc_elastic_tensor(traj_properties: list[dict[str, float]], strain_interval: list[int]=[0,0.05]):
+	
+	if len(strain_interval) > 2:
+		raise TypeError("data_points has to be a 2-dimensional vector of numbers.")
+
+	if strain_interval[0] < 0:
+		raise ValueError("Start of strain inverval cannot be below zero.")
+
+	if strain_interval[0] > strain_interval[1]:
+		raise ValueError("Start of strain interval cannot be above end of strain interval.")
+	
+	start = 0
+	stop = 0
+	for i in range(len(traj_properties)):
+		strain = traj_properties[i]['strain']
+		if strain <= strain_interval[0]:
+			start = i
+		
+		if strain > strain_interval[1]:
+			break
+		
+		stop = i
+
+	delta_stress = traj_properties[stop]['stress']-traj_properties[start]['stress']
+	delta_strain = traj_properties[stop]['strain']-traj_properties[start]['strain']
+
+	cijs = delta_stress/delta_strain
+
+	return cijs
+	
+
+
+def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, strain_interval: list[float]=[0,0], **properties: bool) -> None:
 	"""
 	Creates plot(s) of parameters with respect to iteration step.
 
@@ -69,7 +177,6 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 		combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.
 		properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.
 	"""
-	property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
 
 	steps = range(len(traj_properties))
 	strains = []
@@ -87,6 +194,11 @@ def visualize(traj_properties: dict[int, dict[str, float]], combined_plot: bool 
 				directions = ["xx", "yy", "zz", "yz", "xz", "xy"]
 				for direction in directions:
 					legends.append(parameter+"."+direction)
+				if strain_interval[1] != 0:
+					plt.axvline(x = strain_interval[0])
+					plt.axvline(x = strain_interval[1])
+					plt.text(0, 0, f"Stress in GPa: {calc_elastic_tensor(traj_properties, strain_interval=strain_interval)[2]}")
+					
 			else:
 				legends.append(parameter)
 
