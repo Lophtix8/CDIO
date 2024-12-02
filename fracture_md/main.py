@@ -1,11 +1,11 @@
+import logging
+import logging.config
+from fracture_md import setup_logging
 import os
 import argparse
-from fracture_md import job_manager, md
-import logging
-from fracture_md import read_config,build
+from fracture_md import job_manager
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("main")
 
 def prepare_jobs(config):
     job_manager.prepare_jobs(config)
@@ -39,9 +39,7 @@ def main():
     return
 
 if __name__ == "__main__":
-    """
-    configs = read_config.main("config_template.yaml")
-    for config in configs:
-        build.main(config)
-    """
+    setup_logging.setup_logging('logging.conf')
+    logger.info("Starting main program.")
     main()
+    

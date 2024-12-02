@@ -4,8 +4,9 @@ import argparse
 import os
 from pathlib import Path
 import logging
+from ase.calculators.kim.kim import KIM
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("read_config")
 
 def main(config_file):
     """The main function of the program. It reads the config file and creates
@@ -34,7 +35,7 @@ def main(config_file):
     try:
         logger.info("Checking data in config file...")
         config_data = check_data(config_data)
-    except (ValueError, TypeError, KeyError) as e: 
+    except (ValueError, TypeError, KeyError, FileNotFoundError) as e: 
         logger.error(f"An error was found: {e}, exiting the program.")
         sys.exit(1)
         
@@ -94,24 +95,26 @@ def check_data(config_data):
             logger.error("Argument type should be float but is not.")
             raise TypeError("TypeError")
         
-
+        # Check so that the given OpenKim potential is installed on your system.
+        try:
+            potential_id = config["potential"]
+            KIM(potential_id)
+        except:
+            logger.error(f"The potential_id: '{potential_id}' was not found.")
+            raise ValueError("ValueError")
+        
         # Check so that fracture has exactly three intervals. 
         if not config["custom_fracture"] and len(config["fracture"]) != 3:
             logger.error("fracture should have three dimensions.")
             raise ValueError("ValueError")
             
-        
-        # Remove invalid vasp files
-        existing_files = []
+        # Check so that all files exist.
+        curr_dir = os.path.dirname(__file__)
         for file in config["vasp_files"]:
-            curr_dir = os.path.dirname(__file__)
             dest_path = os.path.join(curr_dir, f"material_database/{file}")
             if not Path(dest_path).exists():
-                logger.warning("Removing file '" + file + "' from dictionary since it does not exist.") 
-            else:
-                existing_files.append(file)
-        
-        config["vasp_files"] = existing_files
+                logger.error(f"The file: '{file}' was not found.")
+                raise FileNotFoundError("FileNotFoundError")
         
         x_len = len(config["x_scalings"])
         y_len = len(config["y_scalings"])

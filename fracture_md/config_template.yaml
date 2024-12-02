@@ -1,14 +1,28 @@
-- vasp_files: [TiN.poscar]
-  x_scalings: [10]
-  y_scalings: [10]
-  z_scalings: [10]
+- vasp_files: [Ti.poscar]
+  x_scalings: [20]
+  y_scalings: [20]
+  z_scalings: [20]
   custom_fracture: false
   fracture: [[0, 1], [0, 0.5], [0.48, 0.52]]
   temps: [300]
   stress_plane: "100"
-  potential: "EAM_CubicNaturalSpline_ErcolessiAdams_1994_Al__MO_800509458712_002"
-  t_interval: 5
-  strain_rate: 0.001
+  potential: "EAM_Dynamo_Ackland_1992_Ti__MO_748534961139_005"
+  strain_rate: 0.002
+  relaxation_iterations: 500
   strain_interval: 10
-  relaxation_iterations: 100
-  iterations: 3000
+  t_interval: 5
+  iterations: 2000
+- vasp_files: [C.poscar]
+  x_scalings: [20]
+  y_scalings: [20]
+  z_scalings: [20]
+  custom_fracture: false
+  fracture: [[0, 1], [0, 0.5], [0.48, 0.52]]
+  temps: [300]
+  stress_plane: "100"
+  potential: "Sim_LAMMPS_LCBOP_LosFasolino_2003_C__SM_469631949122_000"
+  strain_rate: 0.002
+  relaxation_iterations: 500
+  strain_interval: 10
+  t_interval: 5
+  iterations: 2000
