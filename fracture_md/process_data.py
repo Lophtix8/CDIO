@@ -56,7 +56,7 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 			({"ekin": atoms.get_kinetic_energy()/atom_num,
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num,
-			  "stress": atoms.get_stress()/units.GPa,
+			  "stress": atoms.get_stress(voigt=False)/units.GPa,
 			  "strain": (curr_z/starting_z)-1})
 
 		# Derived properties.
@@ -191,26 +191,33 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 		legends = []
 		if include: # Check local bool variables temperature, ekin, epot, etot
 			if parameter == "stress":
-				directions = ["xx", "yy", "zz", "yz", "xz", "xy"]
+				y = []
+				directions = ["xz", "yz", "zz"]
 				for direction in directions:
 					legends.append(parameter+"."+direction)
 				if strain_interval[1] != 0:
 					plt.axvline(x = strain_interval[0])
 					plt.axvline(x = strain_interval[1])
 					plt.text(0, 0, f"Stress in GPa: {calc_elastic_tensor(traj_properties, strain_interval=strain_interval)[2]}")
-					
+				for step in steps:
+					stress = []
+					for i in range(3):
+						stress.append(traj_properties[step][parameter][i][i])
+					y.append(stress)
+
+				for i in range(3):
+					plt.plot(strains, [y_1[i] for y_1 in y], label=f"{parameter}_{directions[i]}")
 			else:
 				legends.append(parameter)
 
-			y = []
-			for step in steps:
-				y.append(traj_properties[step][parameter])
+				for step in steps:
+					y.append(traj_properties[step][parameter])
 
-			plt.plot(strains, y)
+				plt.plot(strains, y, label=parameter)
 			
 			if not combined_plot:
 				plt.ylabel(property_units[parameter])
-				plt.legend(legends, loc="lower right")
+				plt.legend()
 				plt.savefig(parameter+".pdf")
 				plt.clf()
 			else:
