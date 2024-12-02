@@ -108,6 +108,7 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     dyn.attach(printenergy, interval=10)
     dyn.run(num_steps)
 
+    logger.info(f"Done with simulation of {supercell_file})
  
 if __name__ == "__main__":
     poscar_path = sys.argv[1]
