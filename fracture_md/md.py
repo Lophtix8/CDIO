@@ -46,12 +46,12 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
         strain_rate (float): Strain rate
 
     """
+    supercell_file = os.path.basename(supercell_path)
     logger.info(f"Starting md program for {supercell_file}.")
         
     # Set up crystal
     print(supercell_path)
     crystal = read(supercell_path)
-    supercell_file = os.path.basename(supercell_path)
     
     # Describe the interatomic interactions with a potential-id from OpenKim.
     
