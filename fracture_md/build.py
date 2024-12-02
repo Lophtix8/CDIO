@@ -5,7 +5,7 @@ from os.path import abspath, dirname
 import shutil
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("build")
 
 DIR_NAME = dirname(abspath(__file__))
 

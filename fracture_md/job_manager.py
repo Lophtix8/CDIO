@@ -7,7 +7,7 @@ from ase import formula
 
 from fracture_md import build, read_config
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("job_manager")
 
 def prepare_and_queue(conf_path : str, fractured=True, unfractured=False):
     """
@@ -30,6 +30,7 @@ def queue_jobs(job_paths : list[str] = []):
     Keyword Args:
         job_paths=[] (list[str])
     """
+    logger.info("Queueing jobs")
     for job_path in job_paths:
         os.system(f"bash {job_path}")
         #os.system(f"sbatch {job_path}")
@@ -48,6 +49,7 @@ def prepare_jobs(conf_path : str, project_dir="jobs", fractured=True, unfracture
     Return:
         job_paths (list[str]): filepaths to all the jobs prepared.
     """
+    logger.info("Preparing jobs")
     job_paths = []
     sim_data = read_config.main(conf_path)
     working_dir = os.getcwd()
