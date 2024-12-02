@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>fracture_md package &#8212; fractureMD 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="prepare module" href="prepare.html" />
+    <link rel="prev" title="CDIO" href="modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="fracture-md-package">
+<h1>fracture_md package<a class="headerlink" href="#fracture-md-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-fracture_md.build">
+<span id="fracture-md-build-module"></span><h2>fracture_md.build module<a class="headerlink" href="#module-fracture_md.build" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.build.construct_crack">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.build.</span></span><span class="sig-name descname"><span class="pre">construct_crack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supercell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_fracture</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_fracture</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_fracture</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_fracture</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/build.html#construct_crack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.build.construct_crack" title="Link to this definition">¶</a></dt>
+<dd><p>Takes the previously created supercells and adds a crack in them, then names them accordingly.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dirpath (str): The path to where we will save the poscar-file.
+filename (str): Name of the supercell.
+supercell (Atoms()): An Atoms()-object of the supercell to put a crack into.
+custom_fracture (bool): Not implemented yet.
+x_fracture (list): Interval of atoms to remove in x-direction.
+y_fracture (list): Interval of atoms to remove in y-direction.
+z_fracture (list): Interval of atoms to remove in z-direction.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.build.construct_supercell">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.build.</span></span><span class="sig-name descname"><span class="pre">construct_supercell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirpath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unitcell</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_scaling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_scaling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_scaling</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/build.html#construct_supercell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.build.construct_supercell" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>This funtion creates the supercells without a crack in them, ie just multiplies the</dt><dd><p>unitcells by a given amount and names the file accordingly.</p>
+</dd>
+<dt>Args:</dt><dd><p>dirpath (str): The path to where we will save the poscar-file.
+unitcell (str): Name of the filename for the unitcell
+x_scaling (int)
+y_scaling (int)
+z_scaling (int)</p>
+</dd>
+<dt>Returns:</dt><dd><p>str: The name of the supercell-file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.build.delete_build">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.build.</span></span><span class="sig-name descname"><span class="pre">delete_build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/build.html#delete_build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.build.delete_build" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.build.main">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.build.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/build.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.build.main" title="Link to this definition">¶</a></dt>
+<dd><p>Takes in configs as dictionaries and creates simulation-cells from it</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>config (dict): The config-dictionary is parsed from the input config-file specified in the user manual.
+project_dir (str): The path to where we will save the simulations.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-fracture_md.job_manager">
+<span id="fracture-md-job-manager-module"></span><h2>fracture_md.job_manager module<a class="headerlink" href="#module-fracture_md.job_manager" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.job_manager.create_jobs">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.job_manager.</span></span><span class="sig-name descname"><span class="pre">create_jobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poscar_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/job_manager.html#create_jobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.job_manager.create_jobs" title="Link to this definition">¶</a></dt>
+<dd><p>Function that prepares jobs for one poscar and provided simulation data.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>config (dict): Simulation data given by read_config.main(conf_path).
+poscar_filepath (str): Filepath to the poscar.</p>
+</dd>
+<dt>Returns:</dt><dd><p>job_paths (list[str]): List of filepaths to the prepared jobs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.job_manager.get_crystal_info">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.job_manager.</span></span><span class="sig-name descname"><span class="pre">get_crystal_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">poscar_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/job_manager.html#get_crystal_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.job_manager.get_crystal_info" title="Link to this definition">¶</a></dt>
+<dd><p>Function that returns some information about the crystal given its filename.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>poscar_filepth: File path to the poscar.</p>
+</dd>
+<dt>Returns:</dt><dd><p>crystal (str): The name of the unit crystal.
+symbols (str): A string containing only the symbols of the species in the crystal.
+scalings (list[int]): A list with the scalings in [x, y, z].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.job_manager.get_template">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.job_manager.</span></span><span class="sig-name descname"><span class="pre">get_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/fracture_md/job_manager.html#get_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.job_manager.get_template" title="Link to this definition">¶</a></dt>
+<dd><p>Function that reads a template .q file.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>file_path (str): File path to the template .q file.</p>
+</dd>
+<dt>Returns:</dt><dd><p>lines (list[str]): A list of all the lines in the template file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.job_manager.prepare_and_queue">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.job_manager.</span></span><span class="sig-name descname"><span class="pre">prepare_and_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'jobs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fractured</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unfractured</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/job_manager.html#prepare_and_queue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.job_manager.prepare_and_queue" title="Link to this definition">¶</a></dt>
+<dd><p>Function that combines prepare_jobs and queue_jobs. It will queue the jobs prepared with the given config file path.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>conf_path (str): Path to the config file.</p>
+</dd>
+<dt>Keyword Args:</dt><dd><p>fractured=True (bool): Whether to prepare jobs for the poscars with fractures.
+unfractured=False (bool): Whether to prepare jobs for the poscars without fractures.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.job_manager.prepare_jobs">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.job_manager.</span></span><span class="sig-name descname"><span class="pre">prepare_jobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'jobs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fractured</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unfractured</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/job_manager.html#prepare_jobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.job_manager.prepare_jobs" title="Link to this definition">¶</a></dt>
+<dd><p>Function that prepares jobs configured in the provided config file.
+Args:</p>
+<blockquote>
+<div><p>conf_path (str): Path to the config file.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Keyword Args:</dt><dd><p>fractured=True (bool): Whether to prepare jobs for the poscars with fractures.
+unfractured=False (bool): Whether to prepare jobs for the poscars without fractures.</p>
+</dd>
+<dt>Return:</dt><dd><p>job_paths (list[str]): filepaths to all the jobs prepared.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.job_manager.queue_jobs">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.job_manager.</span></span><span class="sig-name descname"><span class="pre">queue_jobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/job_manager.html#queue_jobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.job_manager.queue_jobs" title="Link to this definition">¶</a></dt>
+<dd><p>Function that queues the provided jobs, given as paths to .q files. If no paths are provided, the program will queue all non-ran jobs.</p>
+<dl class="simple">
+<dt>Keyword Args:</dt><dd><p>job_paths=[] (list[str])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.job_manager.write_job">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.job_manager.</span></span><span class="sig-name descname"><span class="pre">write_job</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poscar_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/fracture_md/job_manager.html#write_job"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.job_manager.write_job" title="Link to this definition">¶</a></dt>
+<dd><p>Function that writes a job, i.e. .q file, given a template. Using provided template, the amount of nodes and cores can be modified.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>template_path (str): Path to the template .q-file.
+poscar_path (str): Path to the poscar for the simulation.
+config_path (str): Path to the config file for the simulation.</p>
+</dd>
+<dt>Keyword Args:</dt><dd><p>nodes=1 (int): The amount of nodes for the simulation.
+cores=32 (int): The amound of cores for the simulation.</p>
+</dd>
+<dt>Return:</dt><dd><p>file_path (str): File path to the written .q files.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-fracture_md.main">
+<span id="fracture-md-main-module"></span><h2>fracture_md.main module<a class="headerlink" href="#module-fracture_md.main" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.main.main">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.main.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/main.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.main.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.main.prepare_jobs">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.main.</span></span><span class="sig-name descname"><span class="pre">prepare_jobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/main.html#prepare_jobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.main.prepare_jobs" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.main.queue_jobs">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.main.</span></span><span class="sig-name descname"><span class="pre">queue_jobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jobs_filepaths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/main.html#queue_jobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.main.queue_jobs" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="fracture-md-md-module">
+<h2>fracture_md.md module<a class="headerlink" href="#fracture-md-md-module" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-fracture_md.prepare_jobs">
+<span id="fracture-md-prepare-jobs-module"></span><h2>fracture_md.prepare_jobs module<a class="headerlink" href="#module-fracture_md.prepare_jobs" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.prepare_jobs.main">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.prepare_jobs.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/prepare_jobs.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.prepare_jobs.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-fracture_md.process_data">
+<span id="fracture-md-process-data-module"></span><h2>fracture_md.process_data module<a class="headerlink" href="#module-fracture_md.process_data" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.process_data.calc_elastic_tensor">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.process_data.</span></span><span class="sig-name descname"><span class="pre">calc_elastic_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traj_properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0.05]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/process_data.html#calc_elastic_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.process_data.calc_elastic_tensor" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.process_data.get_results_dirs">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.process_data.</span></span><span class="sig-name descname"><span class="pre">get_results_dirs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/fracture_md/process_data.html#get_results_dirs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.process_data.get_results_dirs" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.process_data.process_data">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.process_data.</span></span><span class="sig-name descname"><span class="pre">process_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traj_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/process_data.html#process_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.process_data.process_data" title="Link to this definition">¶</a></dt>
+<dd><p>Main function for processing data. Depending on the arguments, it will create plots, calculate properties etc.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.process_data.read_all_from_pkl">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.process_data.</span></span><span class="sig-name descname"><span class="pre">read_all_from_pkl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/fracture_md/process_data.html#read_all_from_pkl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.process_data.read_all_from_pkl" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.process_data.read_from_pkl">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.process_data.</span></span><span class="sig-name descname"><span class="pre">read_from_pkl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pkl_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/fracture_md/process_data.html#read_from_pkl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.process_data.read_from_pkl" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.process_data.read_traj_file">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.process_data.</span></span><span class="sig-name descname"><span class="pre">read_traj_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traj_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/fracture_md/process_data.html#read_traj_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.process_data.read_traj_file" title="Link to this definition">¶</a></dt>
+<dd><p>Reads a trajectory file and returns a list of dictionaries containing the parameters, or the pure trajectory object.
+Currently implemented properties include kinetic energy, potential energy, total energy and temperature.</p>
+<dl>
+<dt>Args:</dt><dd><p>traj_filename (str): The filename of the traj file</p>
+</dd>
+<dt>Returns:</dt><dd><p>traj_properties (list): A list of dictionaries. Each entry in the list contains the properties of that step.</p>
+<p>For example, the temperature at the 3rd step is located at: 
+traj_properties[2][temperature]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.process_data.visualize">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.process_data.</span></span><span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traj_properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combined_plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/fracture_md/process_data.html#visualize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.process_data.visualize" title="Link to this definition">¶</a></dt>
+<dd><p>Creates plot(s) of parameters with respect to iteration step.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>traj_properties (dict): A dictionary of traj-file properties given by read_traj_file.
+combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.
+properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.process_data.write_all_to_pkl">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.process_data.</span></span><span class="sig-name descname"><span class="pre">write_all_to_pkl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">job_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/process_data.html#write_all_to_pkl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.process_data.write_all_to_pkl" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.process_data.write_to_pkl">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.process_data.</span></span><span class="sig-name descname"><span class="pre">write_to_pkl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traj_properties</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pkl_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/fracture_md/process_data.html#write_to_pkl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.process_data.write_to_pkl" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-fracture_md.read_config">
+<span id="fracture-md-read-config-module"></span><h2>fracture_md.read_config module<a class="headerlink" href="#module-fracture_md.read_config" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.read_config.check_data">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.read_config.</span></span><span class="sig-name descname"><span class="pre">check_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/read_config.html#check_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.read_config.check_data" title="Link to this definition">¶</a></dt>
+<dd><p>A function that checks for errors in the config file.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>config_data (list): A list of dictionaries with the config data.</p>
+</dd>
+<dt>Returns:</dt><dd><p>config_data (list): A possible modification of the input config_data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fracture_md.read_config.main">
+<span class="sig-prename descclassname"><span class="pre">fracture_md.read_config.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fracture_md/read_config.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fracture_md.read_config.main" title="Link to this definition">¶</a></dt>
+<dd><p>The main function of the program. It reads the config file and creates
+a list for the dictionaries that will contain the config data.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>config_file (str): The config file for the simulation.</p>
+</dd>
+<dt>Returns:</dt><dd><p>config_data (list): Contains dictionaries for each block in the config file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-fracture_md">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-fracture_md" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">fractureMD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">CDIO</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">fracture_md package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prepare.html">prepare module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="setup.html">setup module</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">CDIO</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">CDIO</a></li>
+      <li>Next: <a href="prepare.html" title="next chapter">prepare module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, fractureMD developers.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/fracture_md.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
