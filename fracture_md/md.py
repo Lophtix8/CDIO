@@ -46,7 +46,7 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
         strain_rate (float): Strain rate
 
     """
-    logger.info("Starting md program.")
+    logger.info(f"Starting md program for {supercell_file}.")
         
     # Set up crystal
     print(supercell_path)
@@ -55,7 +55,7 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     
     # Describe the interatomic interactions with a potential-id from OpenKim.
     
-    logger.info("Setting up interatomic potential.")
+    logger.info(f"Setting up interatomic potential for {supercell_file}.")
     try:
         calc = KIM(potential_id)
         crystal.calc = calc
@@ -99,12 +99,12 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     # Run the dynamics
     
     # Relaxation
-    logger.info("Relaxing the system to reach equilibrium.")
+    logger.info(f"Relaxation of {supercell_file}.")
     dyn_relax.attach(printenergy, interval=10)
     dyn_relax.run(relaxation_iterations)
     
     # Straining
-    logger.info("Straining the system.")
+    logger.info(f"Straining of {supercell_file}.")
     dyn.attach(printenergy, interval=10)
     dyn.run(num_steps)
 
