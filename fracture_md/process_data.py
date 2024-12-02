@@ -198,7 +198,8 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 				if strain_interval[1] != 0:
 					plt.axvline(x = strain_interval[0])
 					plt.axvline(x = strain_interval[1])
-					plt.text(0, 0, f"Stress in GPa: {calc_elastic_tensor(traj_properties, strain_interval=strain_interval)[2]}")
+					stress_tensor = calc_elastic_tensor(traj_properties, strain_interval=strain_interval)
+					plt.text(0, 0, f"Stress in GPa: {[stress_tensor[i][i] for i in range(3)]}")
 				for step in steps:
 					stress = []
 					for i in range(3):
