@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>fracture_md.job_manager &#8212; fractureMD 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for fracture_md.job_manager</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">formula</span>
+
+<span class="kn">from</span> <span class="nn">fracture_md</span> <span class="kn">import</span> <span class="n">build</span><span class="p">,</span> <span class="n">read_config</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="prepare_and_queue">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.job_manager.prepare_and_queue">[docs]</a>
+<span class="k">def</span> <span class="nf">prepare_and_queue</span><span class="p">(</span><span class="n">conf_path</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fractured</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unfractured</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that combines prepare_jobs and queue_jobs. It will queue the jobs prepared with the given config file path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conf_path (str): Path to the config file.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        fractured=True (bool): Whether to prepare jobs for the poscars with fractures.</span>
+<span class="sd">        unfractured=False (bool): Whether to prepare jobs for the poscars without fractures.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">job_paths</span> <span class="o">=</span> <span class="n">prepare_jobs</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="n">fractured</span><span class="o">=</span><span class="n">fractured</span><span class="p">,</span> <span class="n">unfractured</span><span class="o">=</span><span class="n">unfractured</span><span class="p">)</span>
+    <span class="n">queue_jobs</span><span class="p">(</span><span class="n">job_paths</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="queue_jobs">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.job_manager.queue_jobs">[docs]</a>
+<span class="k">def</span> <span class="nf">queue_jobs</span><span class="p">(</span><span class="n">job_paths</span> <span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that queues the provided jobs, given as paths to .q files. If no paths are provided, the program will queue all non-ran jobs.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        job_paths=[] (list[str])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">job_path</span> <span class="ow">in</span> <span class="n">job_paths</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sbatch </span><span class="si">{</span><span class="n">job_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="prepare_jobs">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.job_manager.prepare_jobs">[docs]</a>
+<span class="k">def</span> <span class="nf">prepare_jobs</span><span class="p">(</span><span class="n">conf_path</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">project_dir</span><span class="o">=</span><span class="s2">&quot;jobs&quot;</span><span class="p">,</span> <span class="n">fractured</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unfractured</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that prepares jobs configured in the provided config file.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        conf_path (str): Path to the config file.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        fractured=True (bool): Whether to prepare jobs for the poscars with fractures.</span>
+<span class="sd">        unfractured=False (bool): Whether to prepare jobs for the poscars without fractures.</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        job_paths (list[str]): filepaths to all the jobs prepared.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">job_paths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sim_data</span> <span class="o">=</span> <span class="n">read_config</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">conf_path</span><span class="p">)</span>
+    <span class="n">working_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+    <span class="n">abs_working_dir</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">project_dir</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;/&quot;</span><span class="p">):</span>
+        <span class="n">abs_working_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span> <span class="n">project_dir</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">abs_working_dir</span> <span class="o">=</span> <span class="n">project_dir</span>
+    
+    <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">sim_data</span><span class="p">:</span>    
+            
+        <span class="n">poscar_paths</span> <span class="o">=</span> <span class="n">build</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">abs_working_dir</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">fractured</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">poscar_path</span> <span class="ow">in</span> <span class="n">poscar_paths</span><span class="p">[</span><span class="s1">&#39;fractured&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">job_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">create_jobs</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">poscar_path</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">unfractured</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">poscar_path</span> <span class="ow">in</span> <span class="n">poscar_paths</span><span class="p">[</span><span class="s1">&#39;unfractured&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">job_paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">create_jobs</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">poscar_path</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">job_paths</span></div>
+
+
+<div class="viewcode-block" id="create_jobs">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.job_manager.create_jobs">[docs]</a>
+<span class="k">def</span> <span class="nf">create_jobs</span><span class="p">(</span><span class="n">config</span> <span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">poscar_filepath</span> <span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that prepares jobs for one poscar and provided simulation data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (dict): Simulation data given by read_config.main(conf_path).</span>
+<span class="sd">        poscar_filepath (str): Filepath to the poscar.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        job_paths (list[str]): List of filepaths to the prepared jobs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">curr_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+    <span class="n">template_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">curr_dir</span><span class="p">,</span><span class="s2">&quot;template.q&quot;</span><span class="p">)</span>
+
+    <span class="n">crystal</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">scalings</span> <span class="o">=</span> <span class="n">get_crystal_info</span><span class="p">(</span><span class="n">poscar_filepath</span><span class="p">)</span>
+    <span class="n">temps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;temps&#39;</span><span class="p">]</span>
+    
+    <span class="n">poscar_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">poscar_filepath</span><span class="p">)</span>
+    <span class="n">poscar_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">poscar_filepath</span><span class="p">)</span>
+    
+    <span class="n">job_paths</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">temp</span> <span class="ow">in</span> <span class="n">temps</span><span class="p">:</span>
+        <span class="n">job_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">poscar_dir</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;K&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+        <span class="n">temp_conf</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">temp_conf</span><span class="p">[</span><span class="s1">&#39;temps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">temp</span><span class="p">]</span>
+        <span class="n">temp_conf</span><span class="p">[</span><span class="s1">&#39;vasp_files&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">crystal</span> <span class="o">+</span> <span class="s2">&quot;.poscar&quot;</span><span class="p">]</span>
+        <span class="n">temp_conf</span><span class="p">[</span><span class="s1">&#39;x_scalings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">scalings</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">temp_conf</span><span class="p">[</span><span class="s1">&#39;y_scalings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">scalings</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">temp_conf</span><span class="p">[</span><span class="s1">&#39;z_scalings&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">scalings</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="n">poscar_name</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;.poscar&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;K&quot;</span>
+        <span class="n">config_filepath</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">job_dir</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">.yaml&#39;</span>
+        
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">([</span><span class="n">temp_conf</span><span class="p">],</span> <span class="n">file</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">job_path</span> <span class="o">=</span> <span class="n">write_job</span><span class="p">(</span><span class="n">template_path</span><span class="p">,</span> <span class="n">poscar_filepath</span><span class="p">,</span> <span class="n">config_filepath</span><span class="p">)</span>
+        
+        <span class="n">job_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">job_path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">job_paths</span></div>
+
+
+<div class="viewcode-block" id="write_job">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.job_manager.write_job">[docs]</a>
+<span class="k">def</span> <span class="nf">write_job</span><span class="p">(</span><span class="n">template_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">poscar_filepath</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config_filepath</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">nodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cores</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that writes a job, i.e. .q file, given a template. Using provided template, the amount of nodes and cores can be modified.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        template_path (str): Path to the template .q-file.</span>
+<span class="sd">        poscar_path (str): Path to the poscar for the simulation.</span>
+<span class="sd">        config_path (str): Path to the config file for the simulation.</span>
+
+<span class="sd">    Keyword Args:</span>
+<span class="sd">        nodes=1 (int): The amount of nodes for the simulation.</span>
+<span class="sd">        cores=32 (int): The amound of cores for the simulation.</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        file_path (str): File path to the written .q files.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="n">job_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">config_filepath</span><span class="p">)</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;temp_job_</span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s2">.q&quot;</span><span class="p">)</span>
+    <span class="c1">#file_path = os.path.join(job_dir, f&quot;temp_job_{num}.sh&quot;)</span>
+
+    <span class="c1"># Check that file name isn&#39;t already used</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">)):</span>
+        <span class="n">num</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">job_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;temp_job_</span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s2">.q&quot;</span><span class="p">)</span>
+        <span class="c1">#file_path = os.path.join(job_dir, f&quot;temp_job_{num}.sh&quot;)</span>
+    
+    <span class="n">job_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="c1">###</span>
+    <span class="c1">#job_file.write(&quot;#!/bin/bash\n&quot;)</span>
+    <span class="c1">###</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="n">template_path</span><span class="p">)</span>
+
+    
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        
+        <span class="c1"># If it&#39;s an emtpy row, there is no need to go through all the if clauses</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">job_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">continue</span>
+        
+        <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;#SBATCH&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;-N&quot;</span><span class="p">:</span>
+                <span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;-n&quot;</span><span class="p">:</span>
+                <span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cores</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">job_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    
+    <span class="n">curr_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+    <span class="n">job_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;time python3 </span><span class="si">{</span><span class="n">curr_dir</span><span class="si">}</span><span class="s2">/md.py </span><span class="si">{</span><span class="n">poscar_filepath</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">config_filepath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># What python file to execute needs to be written here.</span>
+    <span class="n">job_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">file_path</span></div>
+
+
+<div class="viewcode-block" id="get_template">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.job_manager.get_template">[docs]</a>
+<span class="k">def</span> <span class="nf">get_template</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that reads a template .q file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file_path (str): File path to the template .q file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        lines (list[str]): A list of all the lines in the template file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Template not found.&quot;</span><span class="p">)</span>
+    
+    <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+
+    <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="k">return</span> <span class="n">lines</span></div>
+
+
+<div class="viewcode-block" id="get_crystal_info">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.job_manager.get_crystal_info">[docs]</a>
+<span class="k">def</span> <span class="nf">get_crystal_info</span><span class="p">(</span><span class="n">poscar_filepath</span> <span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that returns some information about the crystal given its filename.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        poscar_filepth: File path to the poscar.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        crystal (str): The name of the unit crystal.</span>
+<span class="sd">        symbols (str): A string containing only the symbols of the species in the crystal.</span>
+<span class="sd">        scalings (list[int]): A list with the scalings in [x, y, z].</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_name</span> <span class="p">:</span> <span class="nb">str</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">poscar_filepath</span><span class="p">)</span><span class="o">.</span><span class="n">removesuffix</span><span class="p">(</span><span class="s2">&quot;.poscar&quot;</span><span class="p">)</span>
+
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Filepath needs to point to a poscar.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NameError</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+    <span class="n">scalings</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;fractured&#39;</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>   
+
+        <span class="n">symbols</span> <span class="o">=</span> <span class="n">formula</span><span class="o">.</span><span class="n">Formula</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">scalings</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)]</span>
+    
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;File name does not follow the necessary conventions.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NameError</span>
+
+    <span class="n">species_list</span> <span class="o">=</span> <span class="p">[]</span> 
+    <span class="k">for</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">symbols</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">species_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">species</span><span class="p">)</span>
+
+    <span class="n">species_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">crystal</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">symbols</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">species_list</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">crystal</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">scalings</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span> 
+    <span class="n">create_jobs</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">fractureMD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">CDIO</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, fractureMD developers.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
