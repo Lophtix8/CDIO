@@ -44,20 +44,36 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 	print(f"Reading trajectory file for: {os.path.basename(traj_filename).rstrip('.traj')}")
 
 	calc = KIM(potential_id)
-    
+	
+	stress_index = 2
+	crystal_properties = os.path.basename(traj_filename).split('_')
+	if crystal_properties[0] == "fractured":
+		stress_index = 3
+	
+	cell_index = 4 # break
+	stress_plane = crystal_properties[stress_index]
+	if stress_plane == "100":
+		cell_index = 0
+	elif stress_plane == "010":
+		cell_index = 1
+	elif stress_plane == "001":
+		cell_index = 2
+	else:
+		raise Exception("Stress plane can must have one 1s and two 0s.")
+
 	atom_num = len(traj[0])
-	starting_z = traj[0].cell[2,2]
+	starting_size = traj[0].cell[cell_index,cell_index]
 
 	for atoms in traj:
 		# Properties in traj object.
 		atoms.calc = calc
-		curr_z = atoms.cell[2,2]
+		curr_size = atoms.cell[cell_index,cell_index]
 		traj_properties.append \
 			({"ekin": atoms.get_kinetic_energy()/atom_num,
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num,
 			  "stress": atoms.get_stress(voigt=False)/units.GPa,
-			  "strain": (curr_z/starting_z)-1})
+			  "strain": (curr_size/starting_size)-1})
 
 		# Derived properties.
 		traj_properties[-1]["temperature"] = traj_properties[-1]["ekin"] / (1.5 * units.kB)
@@ -94,9 +110,9 @@ def write_all_to_pkl(job_dir: str):
 			
 			temp = ""
 			if crystal_properties[0] == "fractured":
-				temp = crystal_properties[3]
+				temp = crystal_properties[4]
 			else:
-				temp = crystal_properties[2]
+				temp = crystal_properties[3]
 			
 			conf_file_path = os.path.join(results_dir.rstrip("/Simulation_results"), temp, crystal_name+".yaml")
 			config_file = open(conf_file_path)
@@ -104,9 +120,10 @@ def write_all_to_pkl(job_dir: str):
 			config_file.close()
 			### End config reading ###
 
-			trajectory_data = read_traj_file(trajectory_path, config_data["potential"])
 			pickle_path = trajectory_path.rstrip('.traj') + ".pkl"
-			write_to_pkl(trajectory_data, pickle_path)
+			if not os.path.isfile(pickle_path): # Write to .pkl if there isn't one already
+				trajectory_data = read_traj_file(trajectory_path, config_data["potential"])
+				write_to_pkl(trajectory_data, pickle_path)
 
 
 def read_all_from_pkl(job_dir: str) -> dict[str, list[str, float]]:

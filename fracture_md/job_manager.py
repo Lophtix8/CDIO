@@ -108,7 +108,7 @@ def create_jobs(config : dict, poscar_filepath : str):
         temp_conf['y_scalings'] = [scalings[1]]
         temp_conf['z_scalings'] = [scalings[2]]
 
-        name = poscar_name.removesuffix(".poscar") + "_" + str(temp) + "K"
+        name = poscar_name.removesuffix(".poscar") +"_"+config['stress_plane']+ "_" + str(temp) + "K"
         config_filepath = f'{job_dir}/{name}.yaml'
         
         with open(config_filepath, 'w') as file:
