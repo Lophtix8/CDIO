@@ -125,8 +125,8 @@ def write_job(template_path: str, poscar_filepath : str, config_filepath : str, 
 
     Args:
         template_path (str): Path to the template .q-file.
-        poscar_path (str): Path to the poscar for the simulation.
-        config_path (str): Path to the config file for the simulation.
+        poscar_filepath (str): Path to the poscar for the simulation.
+        config_filepath (str): Path to the config file for the simulation.
 
     Keyword Args:
         nodes=1 (int): The amount of nodes for the simulation.
@@ -170,7 +170,9 @@ def write_job(template_path: str, poscar_filepath : str, config_filepath : str, 
             
             if parts[1] == "-n":
                 parts[2] = str(cores)
-
+            
+            if parts[1] == "-J":
+                parts[2] = str(os.path.basename(poscar_filepath).rstrip(".poscar")
         output = ' '.join(parts)+"\n"
         job_file.write(output)
     
