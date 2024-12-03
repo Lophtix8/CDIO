@@ -81,6 +81,15 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 	return traj_properties
 
 def get_results_dirs(job_dir: str) -> list[str]:
+	"""
+	Returns a list of paths to the simulation result directories in a job directory.
+
+	Args:
+		job_dir (str): The filepath to the job directory.
+
+	Returns:
+		results_dirs (list): List of paths to the directories containing the simulation results.
+	"""
 	results_dirs = []
 	if not os.path.isabs(job_dir):
 		job_dir = os.path.join(os.getcwd(), job_dir)
@@ -97,8 +106,19 @@ def get_results_dirs(job_dir: str) -> list[str]:
 
 	return results_dirs
 
-def write_all_to_pkl(job_dir: str):
+def write_all_to_pkl(job_dir: str) -> list[str]:
+	"""
+	Function that goes through an entire job directory and puts all the relevant information from the .traj files into corresponding .pkl files.
+	If there is already a .pkl file, it will skip reading the .traj file.
+
+	Args:
+		job_dir (str): The job directory that will be gone through.
+	
+	Returns:
+		pickle_paths (list): List of filepaths to the newly created .pkl files.
+	"""
 	results_dirs = get_results_dirs(job_dir)
+	pickle_paths = []
 	for results_dir in results_dirs:
 		trajectory_paths = [os.path.join(results_dir, x) for x in os.listdir(results_dir) \
 					  		if x.endswith(".traj")]
@@ -124,9 +144,22 @@ def write_all_to_pkl(job_dir: str):
 			if not os.path.isfile(pickle_path): # Write to .pkl if there isn't one already
 				trajectory_data = read_traj_file(trajectory_path, config_data["potential"])
 				write_to_pkl(trajectory_data, pickle_path)
+				pickle_paths.append(pickle_path)
+
+	return pickle_paths
 
 
 def read_all_from_pkl(job_dir: str) -> dict[str, list[str, float]]:
+	"""
+	Function that goes through an entire job directory and reads all the result .pkl files. 
+	It then returns a dictionary with the material as the key and the trajectory properties as the value.
+
+	Args:
+		job_dir (str): The job directory to go through.
+
+	Returns:
+		crystal_traj_properties (dict): Dictionary with the material as the key and the trajectory properties as the value. In the format given by process_data.read_traj_file()
+	"""
 	results_dirs = get_results_dirs(job_dir)
 	pickle_paths = []
 	for results_dir in results_dirs:
@@ -143,17 +176,43 @@ def read_all_from_pkl(job_dir: str) -> dict[str, list[str, float]]:
 	return crystal_traj_properties
 
 def write_to_pkl(traj_properties: list[dict[str, float]], pkl_path: str) -> None:
+	"""
+	Function that writes trajectory properties onto a .pkl file.
+
+	Args:
+		traj_properties (list): Trajectory properties as given by process_data.read_traj_file().
+		pkl_path (str): The filepath to where the .pkl file should be created.
+	"""
 	file = open(pkl_path, 'wb') 
 	pickle.dump(traj_properties, file)
 	file.close()
 
 def read_from_pkl(pkl_path: str) -> list[dict[str, float]]:
+	"""
+	Function that reads a .pkl file and returns the trajectory properties stored within it.
+
+	Args:
+		pkl_path (str): Filepath to the .pkl containing the trajectory properties.
+	
+	Returns:
+		traj_properties (list): Trajectory properties as given by proces_data.read_traj_file()
+	"""
 	file = open(pkl_path, 'rb')
 	traj_properties = pickle.load(file)
 	file.close()
 	return traj_properties
 
-def calc_elastic_tensor(traj_properties: list[dict[str, float]], strain_interval: list[int]=[0,0.05]):
+def calc_elastic_components(traj_properties: list[dict[str, float]], strain_interval: list[int]=[0,0.05]):
+	"""
+	Calculates a 3x3 elasticity matrix using the stress matrices in the trajectory properties and the provided strain interval.
+
+	Args:
+		traj_properties (list): Trajectory properties as given by process_data.read_traj_file().
+		strain_interval (list): List of two floats, defining the interval to calculate the elasticity tensor in.
+	
+	Returns:
+		cijs (ndarray): 3x3 matrix of elasticity constants. 
+	"""
 	
 	if len(strain_interval) > 2:
 		raise TypeError("data_points has to be a 2-dimensional vector of numbers.")
@@ -182,8 +241,6 @@ def calc_elastic_tensor(traj_properties: list[dict[str, float]], strain_interval
 	cijs = delta_stress/delta_strain
 
 	return cijs
-	
-
 
 def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, strain_interval: list[float]=[0,0], **properties: bool) -> None:
 	"""
