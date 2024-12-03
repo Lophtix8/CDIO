@@ -113,20 +113,21 @@ def create_jobs(config : dict, poscar_filepath : str):
         
         with open(config_filepath, 'w') as file:
             yaml.dump([temp_conf], file, default_flow_style=None)
-        job_path = write_job(template_path, poscar_filepath, config_filepath)
+        job_path = write_job(template_path, poscar_filepath, config_filepath,temp)
         
         job_paths.append(job_path)
 
     return job_paths
 
-def write_job(template_path: str, poscar_filepath : str, config_filepath : str, nodes: int = 1, cores:int = 32) -> str:
+def write_job(template_path: str, poscar_filepath : str, config_filepath : str, temp : int, nodes: int = 1, cores:int = 32) -> str:
     """
     Function that writes a job, i.e. .q file, given a template. Using provided template, the amount of nodes and cores can be modified.
 
     Args:
         template_path (str): Path to the template .q-file.
-        poscar_path (str): Path to the poscar for the simulation.
-        config_path (str): Path to the config file for the simulation.
+        poscar_filepath (str): Path to the poscar for the simulation.
+        config_filepath (str): Path to the config file for the simulation.
+        temp (int): Temperature of the simulation. Used for writing the queue name in the .q-file.
 
     Keyword Args:
         nodes=1 (int): The amount of nodes for the simulation.
@@ -170,7 +171,10 @@ def write_job(template_path: str, poscar_filepath : str, config_filepath : str, 
             
             if parts[1] == "-n":
                 parts[2] = str(cores)
-
+            
+            if parts[1] == "-J":
+                queue_name = f"{os.path.basename(poscar_filepath.rstrip('.poscar'))}_{temp}K"
+                parts[2] = queue_name
         output = ' '.join(parts)+"\n"
         job_file.write(output)
     
