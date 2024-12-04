@@ -266,14 +266,14 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 		if include: # Check local bool variables temperature, ekin, epot, etot
 			if parameter == "stress":
 				y = []
-				directions = ["xz", "yz", "zz"]
+				directions = ["x", "y", "z"]
 				for direction in directions:
 					legends.append(parameter+"."+direction)
 				if strain_interval[1] != 0:
 					plt.axvline(x = strain_interval[0])
 					plt.axvline(x = strain_interval[1])
-					stress_tensor = calc_elastic_tensor(traj_properties, strain_interval=strain_interval)
-					plt.text(0, 0, f"Stress in GPa: {[stress_tensor[i][i] for i in range(3)]}")
+					elastic_tensor = calc_elastic_components(traj_properties, strain_interval=strain_interval)
+					plt.text(0, 0, f"Elasticity in GPa: {[elastic_tensor[i][i] for i in range(3)]}")
 				for step in steps:
 					stress = []
 					for i in range(3):
