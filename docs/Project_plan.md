@@ -5,6 +5,7 @@ The design of new materials with desired properties is a crucial step in making 
 
 This program means to preform a material dynamic simulation on an array of materials with a selected number of degrees of freedom. The data extracted from the simulation will then be analyzed to find relevant trends. The main simulation will consist of forces applied to a bulk material to simulate a stress on the material causing it to fracture. Thus, the strength and toughness of different materials can be studied, to find what makes a material exhibit properties that keep it from fracturing.
 
+
 ## Program schematic
 <img src="images/schematic.png" alt="MarineGEO circle logo" style="height: 500px; "/>
 

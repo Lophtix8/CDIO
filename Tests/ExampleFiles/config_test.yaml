@@ -1,0 +1,11 @@
+- vasp_files: [Al.poscar]
+  x_scalings: [3]
+  y_scalings: [3]
+  z_scalings: [3]
+  custom_fracture: false
+  fracture: [[0, 1], [0, 0.5], [0.48, 0.52]]
+  temps: [300]
+  stress_plane: "010"
+  potential_id: "EAM_CubicNaturalSpline_ErcolessiAdams_1994_Al__MO_800509458712_002"
+  iterations: 1000
+  t_interval: 5

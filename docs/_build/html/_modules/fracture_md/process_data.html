@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>fracture_md.process_data &#8212; fractureMD 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for fracture_md.process_data</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">ase.io.trajectory</span> <span class="kn">import</span> <span class="n">Trajectory</span>
+<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atoms</span>
+<span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">units</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<div class="viewcode-block" id="process_data">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.process_data">[docs]</a>
+<span class="k">def</span> <span class="nf">process_data</span><span class="p">(</span><span class="n">traj_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">	</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Main function for processing data. Depending on the arguments, it will create plots, calculate properties etc.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1"># This is just a temporary example</span>
+	<span class="n">traj_properties</span> <span class="o">=</span> <span class="n">read_traj_file</span><span class="p">(</span><span class="n">traj_filename</span><span class="p">)</span>
+	<span class="n">visualize</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">,</span> <span class="n">ekin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">epot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">etot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">combined_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="n">visualize</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="read_traj_file">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.read_traj_file">[docs]</a>
+<span class="k">def</span> <span class="nf">read_traj_file</span><span class="p">(</span><span class="n">traj_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">	</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Reads a trajectory file and returns a list of dictionaries containing the parameters, or the pure trajectory object.</span>
+<span class="sd">	Currently implemented properties include kinetic energy, potential energy, total energy and temperature.</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		traj_filename (str): The filename of the traj file</span>
+
+<span class="sd">	Returns:</span>
+<span class="sd">		traj_properties (list): A list of dictionaries. Each entry in the list contains the properties of that step. \n </span>
+<span class="sd">		For example, the temperature at the 3rd step is located at: </span>
+<span class="sd">		traj_properties[2][temperature] </span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1"># This could possibly be changed to return relevant properties instead. I.e. read_traj_file(&quot;example.traj&quot;, temperature=True).</span>
+	<span class="c1"># Or to take the command line object as it&#39;s argument and manage that.</span>
+	
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">(</span><span class="n">traj_filename</span><span class="p">)</span>
+	
+	<span class="k">except</span><span class="p">:</span>
+		<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Trajectory file not found.&quot;</span><span class="p">)</span>
+
+	<span class="c1"># If not pure, process the trajectory data.</span>
+	<span class="n">traj_properties</span> <span class="o">=</span> <span class="p">[]</span>
+
+	<span class="kn">from</span> <span class="nn">asap3</span> <span class="kn">import</span> <span class="n">EMT</span>
+	<span class="k">for</span> <span class="n">atoms</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">:</span>
+		<span class="c1"># Properties in traj object.</span>
+		<span class="n">atoms</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">EMT</span><span class="p">()</span>
+		<span class="n">atom_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">traj</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">traj_properties</span><span class="o">.</span><span class="n">append</span> \
+			<span class="p">({</span><span class="s2">&quot;ekin&quot;</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span><span class="o">/</span><span class="n">atom_num</span><span class="p">,</span>
+	 		  <span class="s2">&quot;epot&quot;</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span><span class="o">/</span><span class="n">atom_num</span><span class="p">,</span>
+			  <span class="s2">&quot;etot&quot;</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_total_energy</span><span class="p">()</span><span class="o">/</span><span class="n">atom_num</span><span class="p">,</span>
+			  <span class="s2">&quot;stress&quot;</span><span class="p">:</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_stress</span><span class="p">()})</span>
+
+		<span class="c1"># Derived properties.</span>
+		<span class="n">traj_properties</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">traj_properties</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;ekin&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.5</span> <span class="o">*</span> <span class="n">units</span><span class="o">.</span><span class="n">kB</span><span class="p">)</span>
+
+	<span class="k">return</span> <span class="n">traj_properties</span></div>
+
+
+<div class="viewcode-block" id="visualize">
+<a class="viewcode-back" href="../../fracture_md.html#fracture_md.process_data.visualize">[docs]</a>
+<span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">combined_plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">properties</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">	</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Creates plot(s) of parameters with respect to iteration step.</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		traj_properties (dict): A dictionary of traj-file properties given by read_traj_file.</span>
+<span class="sd">		combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.</span>
+<span class="sd">		properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">property_units</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;ekin&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span> <span class="s2">&quot;epot&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span> <span class="s2">&quot;etot&quot;</span><span class="p">:</span> <span class="s2">&quot;eV&quot;</span><span class="p">,</span> <span class="s2">&quot;stress&quot;</span><span class="p">:</span> <span class="s2">&quot;GPa&quot;</span><span class="p">}</span>
+
+	<span class="n">steps</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">))</span>
+	
+	<span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;10*steps&quot;</span><span class="p">)</span>
+	<span class="n">legends_comb</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">parameter</span><span class="p">,</span> <span class="n">include</span> <span class="ow">in</span> <span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+		<span class="n">legends</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">if</span> <span class="n">include</span><span class="p">:</span> <span class="c1"># Check local bool variables temperature, ekin, epot, etot</span>
+			<span class="k">if</span> <span class="n">parameter</span> <span class="o">==</span> <span class="s2">&quot;stress&quot;</span><span class="p">:</span>
+				<span class="n">directions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;xx&quot;</span><span class="p">,</span> <span class="s2">&quot;yy&quot;</span><span class="p">,</span> <span class="s2">&quot;zz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">]</span>
+				<span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="n">directions</span><span class="p">:</span>
+					<span class="n">legends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter</span><span class="o">+</span><span class="s2">&quot;.&quot;</span><span class="o">+</span><span class="n">direction</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">legends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parameter</span><span class="p">)</span>
+
+			<span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">:</span>
+				<span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">traj_properties</span><span class="p">[</span><span class="n">step</span><span class="p">][</span><span class="n">parameter</span><span class="p">])</span>
+
+			<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+			
+			<span class="k">if</span> <span class="ow">not</span> <span class="n">combined_plot</span><span class="p">:</span>
+				<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">property_units</span><span class="p">[</span><span class="n">parameter</span><span class="p">])</span>
+				<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">legends</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;lower right&quot;</span><span class="p">)</span>
+				<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">parameter</span><span class="o">+</span><span class="s2">&quot;.pdf&quot;</span><span class="p">)</span>
+				<span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">legends_comb</span> <span class="o">+=</span> <span class="n">legends</span>
+	
+	
+	<span class="k">if</span> <span class="n">combined_plot</span> <span class="ow">and</span> <span class="n">properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="p">{}:</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">legends_comb</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;lower right&quot;</span><span class="p">)</span> 
+		<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;combined.pdf&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+	<span class="n">process_data</span><span class="p">(</span><span class="s2">&quot;cu.traj&quot;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">fractureMD</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">CDIO</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, fractureMD developers.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
