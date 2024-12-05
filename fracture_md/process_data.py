@@ -264,7 +264,7 @@ def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
 	for step in traj_properties:
 		for i in range(3):
 			temp_stress = step["stress"][i][i]
-			if temp_stress > max_stress_strain[i][0]:
+			if temp_stress > max_stress_strain[i][1]:
 				max_stress_strain[i][0] = step['strain']
 				max_stress_strain[i][1] = temp_stress
 	
