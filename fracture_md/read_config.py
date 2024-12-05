@@ -57,7 +57,7 @@ def check_data(config_data):
     
     keys_to_check = {"vasp_files", "x_scalings", "y_scalings", "z_scalings",
                      "custom_fracture", "fracture", "temps", "stress_plane", "t_interval",
-                     "iterations", "potential", "strain_rate", "strain_interval", "relaxation_iterations"}
+                     "iterations", "potential", "strain_rate", "strain_interval", "relaxation_iterations", "allocated_time"}
     
     for config in config_data:
         
@@ -70,7 +70,7 @@ def check_data(config_data):
         list_keys = {"vasp_files", "x_scalings", "y_scalings", "z_scalings",
                      "temps", "fracture"}
         int_keys = {"t_interval", "iterations", "relaxation_iterations", "strain_interval"}
-        str_keys = {"stress_plane", "potential"}
+        str_keys = {"stress_plane", "potential", "allocated_time"}
         bool_keys = {"custom_fracture"}
         float_keys = {"strain_rate"}
         
