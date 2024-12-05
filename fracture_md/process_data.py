@@ -273,31 +273,19 @@ def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
 def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]):
 	plt.clf()
 	strain_stress_points = {}
-	prev_material_name = ""
-
-	def _make_text():
-		if prev_material_name == '':
-			return
-		tot_x = 0
-		tot_y = 0
-		for point in strain_stress_points[prev_material_name]:
-			tot_x += point[0]
-			tot_y += point[1]
-		points = len(strain_stress_points[prev_material_name])
-		plt.text(tot_x/points, tot_y/points, prev_material_name)
 
 	for material, traj_properties in materials_properties.items():
-		cur_material_name = get_material_name(material)
-		if cur_material_name not in strain_stress_points.keys():
-			strain_stress_points[cur_material_name] = []
+		material_name = get_material_name(material)
+		if material_name not in strain_stress_points.keys():
+			strain_stress_points[material_name] = []
+
 		max_strain_stress = calc_yield_strength_point(traj_properties)
 		stress_direction = get_stress_direction(material)
 		x = max_strain_stress[stress_direction][0]
 		y = max_strain_stress[stress_direction][1]
 
-		strain_stress_points[cur_material_name].append([x,y])
+		strain_stress_points[material_name].append([x,y])
 		
-		material_name = get_material_name(material)
 		color = "grey"
 		if "C" in material_name:
 			color = "black"
@@ -305,13 +293,15 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
 			color = "blue"
 
 		plt.scatter(x, y, c=color)
-		# Print the materials at the center between all points associated with the material
-		if cur_material_name is not prev_material_name:
-			_make_text()
-
-		prev_material_name = cur_material_name
 	
-	_make_text()
+	for material_name, points in strain_stress_points.items():
+		tot_x = 0
+		tot_y = 0
+		for point in points:
+			tot_x += point[0]
+			tot_y += point[1]
+		points_len = len(points)
+		plt.text(tot_x/points, tot_y/points_len, material_name)
 
 	plt.savefig("scatterplot.pdf")
 
