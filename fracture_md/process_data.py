@@ -242,6 +242,25 @@ def calc_elastic_components(traj_properties: list[dict[str, float]], strain_inte
 
 	return cijs
 
+def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
+	max_stress_strain = [[0, 0], [0,0], [0,0]]
+	
+	for step in traj_properties:
+		for i in range(3):
+			temp_stress = step["stress"][i][i]
+			if temp_stress > max_stress_strain[i][0]:
+				max_stress_strain[i][0] = temp_stress
+				max_stress_strain[i][1] = step['strain']
+	
+	return max_stress_strain
+
+def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]):
+	
+	for material, traj_properties in materials_properties.items():
+		#do stuff
+		continue
+	pass
+
 def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, strain_interval: list[float]=[0,0], **properties: bool) -> None:
 	"""
 	Creates plot(s) of parameters with respect to iteration step.
