@@ -265,8 +265,8 @@ def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
 		for i in range(3):
 			temp_stress = step["stress"][i][i]
 			if temp_stress > max_stress_strain[i][0]:
-				max_stress_strain[i][0] = temp_stress
-				max_stress_strain[i][1] = step['strain']
+				max_stress_strain[i][0] = step['strain']
+				max_stress_strain[i][1] = temp_stress
 	
 	return max_stress_strain
 
@@ -301,7 +301,7 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
 			tot_x += point[0]
 			tot_y += point[1]
 		points_len = len(points)
-		plt.text(tot_x/points, tot_y/points_len, material_name)
+		plt.text(tot_x/points_len, tot_y/points_len, material_name)
 
 	plt.savefig("scatterplot.pdf")
 
