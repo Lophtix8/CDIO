@@ -17,6 +17,25 @@ def process_data(traj_filename: str):
 	visualize(traj_properties, temperature=True)
 	return
 
+def get_stress_direction(crystal_name: str):
+	crystal_properties = crystal_name.split('_')
+	
+	stress_index = 2
+	if crystal_properties[0] == "fractured":
+		stress_index = 3
+	
+	cell_index = 4 # break the code
+	stress_plane = crystal_properties[stress_index]
+	if stress_plane == "100":
+		cell_index = 0
+	elif stress_plane == "010":
+		cell_index = 1
+	elif stress_plane == "001":
+		cell_index = 2
+	else:
+		raise Exception("Stress plane can must have one 1s and two 0s.")
+	return cell_index
+
 def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, float]]:
 	"""
 	Reads a trajectory file and returns a list of dictionaries containing the parameters, or the pure trajectory object.
@@ -45,21 +64,9 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 
 	calc = KIM(potential_id)
 	
-	stress_index = 2
-	crystal_properties = os.path.basename(traj_filename).split('_')
-	if crystal_properties[0] == "fractured":
-		stress_index = 3
+	crystal_name = os.path.basename(traj_filename)
 	
-	cell_index = 4 # break
-	stress_plane = crystal_properties[stress_index]
-	if stress_plane == "100":
-		cell_index = 0
-	elif stress_plane == "010":
-		cell_index = 1
-	elif stress_plane == "001":
-		cell_index = 2
-	else:
-		raise Exception("Stress plane can must have one 1s and two 0s.")
+	cell_index = get_stress_direction(crystal_name)
 
 	atom_num = len(traj[0])
 	starting_size = traj[0].cell[cell_index,cell_index]
@@ -255,11 +262,15 @@ def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
 	return max_stress_strain
 
 def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]):
-	
+	plt.clf()
 	for material, traj_properties in materials_properties.items():
-		#do stuff
-		continue
-	pass
+		max_strain_stress = calc_yield_strength_point(traj_properties)
+		stress_direction = get_stress_direction(material)
+		x = max_strain_stress[stress_direction][0]
+		y = max_strain_stress[stress_direction][1]
+		plt.scatter(x, y)
+	
+	plt.savefig("scatterplot.pdf")
 
 def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, strain_interval: list[float]=[0,0], **properties: bool) -> None:
 	"""
