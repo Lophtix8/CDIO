@@ -272,6 +272,8 @@ def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
 
 def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]):
 	plt.clf()
+	plt.xlabel("Strain")
+	plt.ylabel("Stress (GPa)")
 	strain_stress_points = {}
 
 	for material, traj_properties in materials_properties.items():
