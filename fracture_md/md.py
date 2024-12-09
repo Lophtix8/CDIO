@@ -87,6 +87,7 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     
     file_name = supercell_file.removesuffix('.poscar') + f"_{''.join([str(x) for x in stress_plane])}_{temp}K"
     traj_filepath = os.path.join(dest_path, f"{file_name}.traj")
+    pkl_filepath = traj_filepath.removesuffix(".traj")+".pkl"
     
     traj = Trajectory(traj_filepath, "w", crystal)
     
@@ -108,6 +109,7 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
         """Function to print the potential, kinetic and total energy of the crystal."""
         traj_property = calcenergy(a, stress_plane, starting_size)
         traj_properties.append(traj_property)
+        process_data.write_to_pkl(traj_properties, pkl_filepath)
         epot, ekin, int_T, etot = traj_property['epot'], traj_property['ekin'], traj_property['temperature'], traj_property['etot']
         print('Energy per atom: Epot = %.3feV  Ekin = %.3feV (T=%3.0fK)'
               'Etot = %.3feV' % (epot, ekin, int_T, etot))
@@ -130,7 +132,6 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     dyn.attach(printenergy, interval=10)
     dyn.run(num_steps)
 
-    pkl_filepath = traj_filepath.removesuffix(".traj")+".pkl"
     process_data.write_to_pkl(traj_properties, pkl_filepath)
 
     logger.info(f"Done with simulation of {supercell_file}")
