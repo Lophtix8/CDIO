@@ -1,3 +1,8 @@
+"""
+ Copyright (c) 2024 JALL-E
+ Licensed under the MIT License. See LICENSE file in the project root for details.
+"""
+
 from ase.io.trajectory import Trajectory
 from ase import Atoms
 from ase import units

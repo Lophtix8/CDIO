@@ -1,3 +1,8 @@
+"""
+ Copyright (c) 2024 JALL-E
+ Licensed under the MIT License. See LICENSE file in the project root for details.
+"""
+
 import os
 import logging
 import copy
