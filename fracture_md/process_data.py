@@ -73,7 +73,7 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num,
 			  "stress": atoms.get_stress(voigt=False)/units.GPa,
-			  "strain": (curr_size/starting_size)-1})
+			  "strain": numpy.subtract(numpy.divide(curr_size,starting_size), 1)})
 
 		# Derived properties.
 		traj_properties[-1]["temperature"] = traj_properties[-1]["ekin"] / (1.5 * units.kB)
@@ -226,7 +226,9 @@ def calc_elastic_components(traj_properties: list[dict[str, float]], strain_inte
 	start = 0
 	stop = 0
 	for i in range(len(traj_properties)):
-		strain = traj_properties[i]['strain']
+		strain_tensor = traj_properties[i]['strain']
+		strain = numpy.sqrt(sum([strain_tensor[i][i] for i in range(3)]))
+		
 		if strain <= strain_interval[0]:
 			start = i
 		
@@ -238,7 +240,7 @@ def calc_elastic_components(traj_properties: list[dict[str, float]], strain_inte
 	delta_stress = traj_properties[stop]['stress']-traj_properties[start]['stress']
 	delta_strain = traj_properties[stop]['strain']-traj_properties[start]['strain']
 
-	cijs = delta_stress/delta_strain
+	cijs = numpy.divide(delta_stress, delta_strain)
 
 	return cijs
 
@@ -256,7 +258,9 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 	strains = []
 
 	for step in steps:
-		strains.append(traj_properties[step]['strain'])
+		strain_tensor = traj_properties[step]['strain']
+		strain = numpy.sqrt(sum([strain_tensor[i][i] for i in range(3)]))
+		strains.append(strain)
 	
 	plt.clf()
 	plt.xlabel("strain")
