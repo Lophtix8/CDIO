@@ -73,6 +73,7 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 	 		  "epot": atoms.get_potential_energy()/atom_num,
 			  "etot": atoms.get_total_energy()/atom_num,
 			  "stress": atoms.get_stress(voigt=False)/units.GPa,
+			  "positions": atoms.get_positions(),
 			  "strain": numpy.subtract(numpy.divide(curr_size,starting_size), 1)})
 
 		# Derived properties.
@@ -148,6 +149,62 @@ def write_all_to_pkl(job_dir: str) -> list[str]:
 
 	return pickle_paths
 
+def calc_avg_temp(traj_properties: list[dict[str, float]], step_interval = [0, -1]):
+	
+	if step_interval[0] < 0:
+		step_interval[0] = 0
+	
+	if step_interval[1] >= len(traj_properties):
+		step_interval[1] = -1
+
+	if step_interval[1] == -1:
+		step_interval[1] = len(traj_properties)-1
+	
+	total_temp = 0
+
+	for i in range(step_interval[0], step_interval[1]):
+		total_temp += traj_properties[i]['temperature']
+
+	delta_step = step_interval[1]-step_interval[0]
+	avg_temp = total_temp/delta_step
+
+	return avg_temp
+
+def calc_msd(traj_properties: list[dict[str, float]], step_interval = [0, -1]):
+	
+	if step_interval[0] < 0:
+		step_interval[0] = 0
+	
+	if step_interval[1] >= len(traj_properties):
+		step_interval[1] = -1
+
+	if step_interval[1] == -1:
+		step_interval[1] = len(traj_properties)-1
+
+	delta_step = step_interval[1]-step_interval[0]
+
+	avg_positions = []
+
+	for i in range(step_interval[0], step_interval[1]):
+		step = traj_properties[i]
+		positions = step["positions"]
+		for j in range(len(positions)):
+			avg_positions.append([0,0,0])
+
+		for j in range(len(positions)):
+			for k in range(3):
+				avg_positions[j][k] += positions[j][k]/delta_step
+
+	tot_msd = 0
+	for i in range(step_interval[0], step_interval[1]):
+		step = traj_properties[i]
+		positions = step["positions"]
+
+		for j in range(len(positions)):
+			for k in range(3):
+				tot_msd += ((avg_positions[j][k]-positions[j][k])**2)
+	avg_msd = tot_msd/(delta_step*len(traj_properties[-1]['positions']))
+	return avg_msd	
 
 def read_all_from_pkl(job_dir: str) -> dict[str, list[str, float]]:
 	"""
@@ -287,6 +344,7 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 				for i in range(3):
 					plt.plot(strains, [y_1[i] for y_1 in y], label=f"{parameter}_{directions[i]}")
 			else:
+				y = []
 				legends.append(parameter)
 
 				for step in steps:
