@@ -45,29 +45,13 @@ def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, floa
 
 	calc = KIM(potential_id)
 	
-	stress_index = 2
-	crystal_properties = os.path.basename(traj_filename).split('_')
-	if crystal_properties[0] == "fractured":
-		stress_index = 3
-	
-	cell_index = 4 # break
-	stress_plane = crystal_properties[stress_index]
-	if stress_plane == "100":
-		cell_index = 0
-	elif stress_plane == "010":
-		cell_index = 1
-	elif stress_plane == "001":
-		cell_index = 2
-	else:
-		raise Exception("Stress plane can must have one 1s and two 0s.")
-
 	atom_num = len(traj[0])
-	starting_size = traj[0].cell[cell_index,cell_index]
+	starting_size = traj[0].get_cell()
 
 	for atoms in traj:
 		# Properties in traj object.
 		atoms.calc = calc
-		curr_size = atoms.cell[cell_index,cell_index]
+		curr_size = atoms.get_cell()
 		traj_properties.append \
 			({"ekin": atoms.get_kinetic_energy()/atom_num,
 	 		  "epot": atoms.get_potential_energy()/atom_num,
@@ -170,8 +154,27 @@ def calc_avg_temp(traj_properties: list[dict[str, float]], step_interval = [0, -
 
 	return avg_temp
 
-def calc_msd(traj_properties: list[dict[str, float]], step_interval = [0, -1]):
+def calc_avg_position(traj_properties: list[dict[str,float]], step_interval = [0, -1]):
 	
+	step_interval = _check_calc_interval(traj_properties, step_interval)
+
+	delta_step = step_interval[1]-step_interval[0]
+
+	avg_position = []
+
+	for i in range(len(traj_properties[0]['positions'])):
+		avg_position.append([0,0,0])
+
+	for i in range(step_interval[0], step_interval[1]):
+		step = traj_properties[i]
+		position = step["positions"]
+		for j in range(len(position)):
+			for k in range(3):
+				avg_position[j][k] += position[j][k]/delta_step
+
+	return avg_position
+
+def _check_calc_interval(traj_properties: list[dict[str, float]], step_interval):
 	if step_interval[0] < 0:
 		step_interval[0] = 0
 	
@@ -181,30 +184,46 @@ def calc_msd(traj_properties: list[dict[str, float]], step_interval = [0, -1]):
 	if step_interval[1] == -1:
 		step_interval[1] = len(traj_properties)-1
 
+	return step_interval
+
+def calc_msd(avg_position, position):
+	
+	msd = 0
+
+	for i in range(len(avg_position)):
+		for j in range(3):
+			msd += (avg_position[i][j]-position[i][j])**2
+	return msd
+
+def calc_avg_msd(traj_properties: list[dict[str, float]], step_interval = [0, -1]):
+
+	step_interval = _check_calc_interval(traj_properties, step_interval)
+
 	delta_step = step_interval[1]-step_interval[0]
 
-	avg_positions = []
-
-	for i in range(step_interval[0], step_interval[1]):
-		step = traj_properties[i]
-		positions = step["positions"]
-		for j in range(len(positions)):
-			avg_positions.append([0,0,0])
-
-		for j in range(len(positions)):
-			for k in range(3):
-				avg_positions[j][k] += positions[j][k]/delta_step
-
+	avg_position = calc_avg_position(traj_properties, step_interval=step_interval)
+	
 	tot_msd = 0
-	for i in range(step_interval[0], step_interval[1]):
-		step = traj_properties[i]
-		positions = step["positions"]
+	
+	positions = [traj_properties[i]['positions'] for i in range(*step_interval)]
+	for position in positions:	
+		tot_msd += calc_msd(avg_position, position)
 
-		for j in range(len(positions)):
-			for k in range(3):
-				tot_msd += ((avg_positions[j][k]-positions[j][k])**2)
 	avg_msd = tot_msd/(delta_step*len(traj_properties[-1]['positions']))
-	return avg_msd	
+	
+	return avg_msd
+
+def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval = [0, -1], d = 3):
+	
+	step_interval = _check_calc_interval(traj_properties, step_interval)
+
+	avg_position = calc_avg_position(traj_properties, step_interval=step_interval)
+	position = traj_properties[step_interval[1]]['positions'] 
+
+	msd = calc_msd(avg_position, position)
+	
+	self_diffusion = 1/(2*d) * msd
+	return self_diffusion
 
 def read_all_from_pkl(job_dir: str) -> dict[str, list[str, float]]:
 	"""
@@ -316,8 +335,10 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 
 	for step in steps:
 		strain_tensor = traj_properties[step]['strain']
-		strain = numpy.sqrt(sum([strain_tensor[i][i] for i in range(3)]))
-		strains.append(strain)
+		if type(strain_tensor) == float:
+			strains.append(strain_tensor)
+		else:
+			strains.append(numpy.sqrt(sum([strain_tensor[i][i] for i in range(3)])))
 	
 	plt.clf()
 	plt.xlabel("strain")
