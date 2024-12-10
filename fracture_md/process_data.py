@@ -239,10 +239,17 @@ def calc_elastic_components(traj_properties: list[dict[str, float]], strain_inte
 	if strain_interval[0] > strain_interval[1]:
 		raise ValueError("Start of strain interval cannot be above end of strain interval.")
 	
+	strain = 0
+
+	strain_tensor = traj_properties[0]['strain'] is not float
+
 	start = 0
 	stop = 0
 	for i in range(len(traj_properties)):
 		strain = traj_properties[i]['strain']
+		if strain_tensor:
+			strain = numpy.sqrt(sum([strain[i][i] for i in range(3)]))
+		
 		if strain <= strain_interval[0]:
 			start = i
 		
@@ -253,9 +260,12 @@ def calc_elastic_components(traj_properties: list[dict[str, float]], strain_inte
 
 	delta_stress = traj_properties[stop]['stress']-traj_properties[start]['stress']
 	delta_strain = traj_properties[stop]['strain']-traj_properties[start]['strain']
+	if strain_tensor:
+		delta_strain=strain = numpy.sqrt(sum([delta_strain[i][i] for i in range(3)]))
 
 	cijs = delta_stress/delta_strain
 
+	print(cijs)
 	return cijs
 
 def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
