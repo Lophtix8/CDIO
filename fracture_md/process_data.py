@@ -339,7 +339,7 @@ def calc_elastic_components(traj_properties: list[dict[str, float]], strain_inte
 	if strain_interval[0] > strain_interval[1]:
 		raise ValueError("Start of strain interval cannot be above end of strain interval.")
 	
-	strain_tensor = type(traj_properties[0]['strain']) is not float
+	strain_tensor = not numpy.isscalar(traj_properties[0]['strain'])
 
 	start = 0
 	stop = 0
@@ -432,7 +432,7 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 
 	for step in steps:
 		strain_tensor = traj_properties[step]['strain']
-		if type(strain_tensor) is float:
+		if numpy.isscalar(strain_tensor):
 			strains.append(strain_tensor)
 		else:
 			strain = numpy.sqrt(sum([strain_tensor[i][i]**2 for i in range(3)]))
