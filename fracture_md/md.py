@@ -76,10 +76,10 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     MaxwellBoltzmannDistribution(crystal, temperature_K=temp)
     
     # Relax the fractured system by running MD without strain in the beginning.
-    dyn_relax = NPTBerendsen(crystal, timestep= 5 * units.fs, temperature_K=temp, pressure_au=1.013*units.bar)
-    
+    #dyn_relax = NPTBerendsen(crystal, timestep= 5 * units.fs, temperature_K=temp, pressure_au=1.013*units.bar)
+    dyn_relax = Langevin(crystal, timestep= 5 * units.fs, temperature_K=temp, friction=0.01/units.fs) # 5 fs time step.
     # We want to run MD with constant energy using the VelocityVerlet algorithm.
-    dyn = dyn_relax = Langevin(crystal, timestep= 5 * units.fs, temperature_K=temp, friction=0.01/units.fs) # 5 fs time step.
+    dyn = Langevin(crystal, timestep= 5 * units.fs, temperature_K=temp, friction=0.01/units.fs) # 5 fs time step.
     
     dest_path = os.path.dirname(supercell_path) + "/Simulation_results"
     
@@ -103,7 +103,6 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
         crystal.set_cell(crystal.cell @ strain_matrix, scale_atoms=True)  # Scale cell and atom positions
     
     # Attach strain application to dynamics at every step
-    
 
     def printenergy(a=crystal):  # store a reference to atoms in the definition.
         """Function to print the potential, kinetic and total energy of the crystal."""
@@ -115,14 +114,45 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
               'Etot = %.3feV' % (epot, ekin, int_T, etot))
     
     # Run the dynamics
-    
+    atom_num = len(crystal)
+    prev_etot = (1-strain_rate)*crystal.get_total_energy()/atom_num
+    relaxed_system_properties = {"prev_epot": prev_etot, "cur_epot": 0, "dir": 1}
     # Relaxation
+    def relax_system(a = crystal, rsp = relaxed_system_properties):
+
+        # Using pressure
+        cur_epot = rsp['cur_epot'] = sum([a.get_stress()[i] for i in range(3)])
+        prev_epot = rsp['prev_epot']
+        ratio = abs((cur_epot-prev_epot)/prev_epot)
+        if ratio > strain_rate:
+            ratio = strain_rate
+        dir = 1
+        if cur_epot > 0:
+            dir = -1
+        print(f"etot: {cur_epot}, ratio: {ratio}, dir: {dir}")
+        a.cell *= (1+ratio*dir)
+        rsp['prev_epot'] = cur_epot
+
+        # Using total energy
+        """
+        cur_epot = rsp['cur_epot'] = a.get_total_energy()/atom_num
+        prev_epot = rsp['prev_epot']
+        ratio = abs((cur_epot-prev_epot)/prev_epot) 
+        if ratio > strain_rate:
+            ratio = strain_rate
+        if cur_epot > prev_epot:
+            rsp['dir'] *= -1
+        print(f"etot: {cur_epot}, ratio: {ratio}, dir: {rsp['dir']}")
+        a.cell *= (1+ratio*rsp['dir'])
+        rsp['prev_epot'] = cur_epot"""
+
+    dyn_relax.attach(relax_system, interval=10)
     logger.info(f"Relaxation of {supercell_file}.")
     #dyn_relax.attach(printenergy, interval=10)
     dyn_relax.run(relaxation_iterations)
     
     # Between relaxation and starting the simulation
-    starting_size = traj.atoms.get_cell()
+    starting_size = crystal.get_cell()
     print(f"Starting size: {starting_size}")
     traj_properties = [calcenergy(crystal, stress_plane, starting_size)]
 
