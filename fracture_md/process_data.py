@@ -409,7 +409,7 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 		properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.
 	"""
 
-	steps = range(len(traj_properties))
+	steps = range(1, len(traj_properties))
 	strains = []
 
 	for step in steps:
