@@ -1,3 +1,8 @@
+"""
+ Copyright (c) 2024 JALL-E
+ Licensed under the MIT License. See LICENSE file in the project root for details.
+"""
+
 from ase.io.trajectory import Trajectory
 from ase import Atoms
 from ase import units
@@ -16,6 +21,34 @@ def process_data(traj_filename: str):
     visualize(traj_properties, ekin=True, epot=True, etot=True, combined_plot=True)
     visualize(traj_properties, temperature=True)
     return
+
+def get_stress_direction(crystal_name: str):
+	crystal_properties = crystal_name.split('_')
+	
+	stress_index = 2
+	if crystal_properties[0] == "fractured":
+		stress_index = 3
+	
+	cell_index = 4 # break the code
+	stress_plane = crystal_properties[stress_index]
+	if stress_plane == "100":
+		cell_index = 0
+	elif stress_plane == "010":
+		cell_index = 1
+	elif stress_plane == "001":
+		cell_index = 2
+	else:
+		raise Exception("Stress plane can must have one 1s and two 0s.")
+	return cell_index
+
+def get_material_name(crystal_name: str):
+	crystal_properties = crystal_name.split('_')
+	name_index = 0
+	if crystal_properties[0] == "fractured":
+		name_index = 1
+
+	return crystal_properties[name_index]
+	
 
 def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, float]]:
     """
@@ -268,93 +301,151 @@ def read_from_pkl(pkl_path: str) -> list[dict[str, float]]:
     return traj_properties
 
 def calc_elastic_components(traj_properties: list[dict[str, float]], strain_interval: list[int]=[0,0.05]):
-    """
-    Calculates a 3x3 elasticity matrix using the stress matrices in the trajectory properties and the provided strain interval.
+	"""
+	Calculates a 3x3 elasticity matrix using the stress matrices in the trajectory properties and the provided strain interval.
 
-    Args:
-        traj_properties (list): Trajectory properties as given by process_data.read_traj_file().
-        strain_interval (list): List of two floats, defining the interval to calculate the elasticity tensor in.
-    
-    Returns:
-        cijs (ndarray): 3x3 matrix of elasticity constants. 
-    """
-    
-    if len(strain_interval) > 2:
-        raise TypeError("data_points has to be a 2-dimensional vector of numbers.")
+	Args:
+		traj_properties (list): Trajectory properties as given by process_data.read_traj_file().
+		strain_interval (list): List of two floats, defining the interval to calculate the elasticity tensor in.
+	
+	Returns:
+		cijs (ndarray): 3x3 matrix of elasticity constants. 
+	"""
+	
+	if len(strain_interval) > 2:
+		raise TypeError("data_points has to be a 2-dimensional vector of numbers.")
 
-    if strain_interval[0] < 0:
-        raise ValueError("Start of strain inverval cannot be below zero.")
+	if strain_interval[0] < 0:
+		raise ValueError("Start of strain inverval cannot be below zero.")
 
-    if strain_interval[0] > strain_interval[1]:
-        raise ValueError("Start of strain interval cannot be above end of strain interval.")
-    
-    start = 0
-    stop = 0
-    for i in range(len(traj_properties)):
-        strain_tensor = traj_properties[i]['strain']
-        strain = numpy.sqrt(sum([strain_tensor[i][i] for i in range(3)]))
-        
-        if strain <= strain_interval[0]:
-            start = i
-        
-        if strain > strain_interval[1]:
-            break
-        
-        stop = i
+	if strain_interval[0] > strain_interval[1]:
+		raise ValueError("Start of strain interval cannot be above end of strain interval.")
+	
+	strain_tensor = not numpy.isscalar(traj_properties[0]['strain'])
 
-    delta_stress = traj_properties[stop]['stress']-traj_properties[start]['stress']
-    delta_strain = traj_properties[stop]['strain']-traj_properties[start]['strain']
+	start = 0
+	stop = 0
+	
+	for i in range(len(traj_properties)):
+		strain = traj_properties[i]['strain']
+		if strain_tensor:
+			strain = numpy.sqrt(sum([strain[i][i]**2 for i in range(3)]))
 
-    cijs = numpy.divide(delta_stress, delta_strain)
+		if strain <= strain_interval[0]:
+			start = i
+		
+		if strain > strain_interval[1]:
+			break
+		
+		stop = i
 
-    return cijs
+	delta_stress = traj_properties[stop]['stress']-traj_properties[start]['stress']
+	delta_strain = traj_properties[stop]['strain']-traj_properties[start]['strain']
+	
+	if strain_tensor:
+		delta_strain=strain = numpy.sqrt(sum([delta_strain[i][i]**2 for i in range(3)]))
+
+	cijs = delta_stress/delta_strain
+
+	return cijs
+
+def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
+	max_stress_strain = [[0, 0], [0,0], [0,0]]
+	
+	for step in traj_properties:
+		for i in range(3):
+			temp_stress = step["stress"][i][i]
+			if temp_stress > max_stress_strain[i][1]:
+				max_stress_strain[i][0] = step['strain']
+				max_stress_strain[i][1] = temp_stress
+	
+	return max_stress_strain
+
+def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]):
+	plt.clf()
+	plt.xlabel("Strain")
+	plt.ylabel("Stress (GPa)")
+	strain_stress_points = {}
+
+	for material, traj_properties in materials_properties.items():
+		material_name = get_material_name(material)
+		if material_name not in strain_stress_points.keys():
+			strain_stress_points[material_name] = []
+
+		max_strain_stress = calc_yield_strength_point(traj_properties)
+		stress_direction = get_stress_direction(material)
+		x = max_strain_stress[stress_direction][0]
+		y = max_strain_stress[stress_direction][1]
+
+		strain_stress_points[material_name].append([x,y])
+		
+		color = "grey"
+		if "C" in material_name:
+			color = "black"
+		elif "N" in material_name:
+			color = "blue"
+
+		plt.scatter(x, y, c=color)
+	
+	for material_name, points in strain_stress_points.items():
+		tot_x = 0
+		tot_y = 0
+		for point in points:
+			tot_x += point[0]
+			tot_y += point[1]
+		points_len = len(points)
+		plt.text(tot_x/points_len, tot_y/points_len, material_name)
+
+	plt.savefig("scatterplot.pdf")
+
 
 def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, strain_interval: list[float]=[0,0], **properties: bool) -> None:
-    """
-    Creates plot(s) of parameters with respect to iteration step.
+	"""
+	Creates plot(s) of parameters with respect to iteration step.
 
-    Args:
-        traj_properties (dict): A dictionary of traj-file properties given by read_traj_file.
-        combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.
-        properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.
-    """
+	Args:
+		traj_properties (dict): A dictionary of traj-file properties given by read_traj_file.
+		combined_plot (bool): A boolean for when you want to plot multiple properties on the same plot.
+		properties (dict): A parapeter list of all properties you want to include, i.e. temperature=True.
+	"""
 
-    steps = range(1, len(traj_properties))
-    strains = []
+	steps = range(len(traj_properties))
+	strains = []
 
-    for step in steps:
-        strain_tensor = traj_properties[step]['strain']
-        if type(strain_tensor) == float:
-            strains.append(strain_tensor)
-        else:
-            strains.append(numpy.sqrt(sum([strain_tensor[i][i] for i in range(3)])))
-    
-    plt.clf()
-    plt.xlabel("strain")
-    legends_comb = []
-    for parameter, include in properties.items():
-        legends = []
-        if include: # Check local bool variables temperature, ekin, epot, etot
-            y = []
-            if parameter == "stress":
-                directions = ["x", "y", "z"]
-                for direction in directions:
-                    legends.append(parameter+"."+direction)
-                if strain_interval[1] != 0:
-                    plt.axvline(x = strain_interval[0])
-                    plt.axvline(x = strain_interval[1])
-                    elastic_tensor = calc_elastic_components(traj_properties, strain_interval=strain_interval)
-                    plt.text(0, 0, f"Elasticity in GPa: {[elastic_tensor[i][i] for i in range(3)]}")
-                for step in steps:
-                    stress = []
-                    for i in range(3):
-                        stress.append(traj_properties[step][parameter][i][i])
-                    y.append(stress)
+	for step in steps:
+		strain_tensor = traj_properties[step]['strain']
+		if numpy.isscalar(strain_tensor):
+			strains.append(strain_tensor)
+		else:
+			strain = numpy.sqrt(sum([strain_tensor[i][i]**2 for i in range(3)]))
+			strains.append(strain)
+	
+	plt.clf()
+	plt.xlabel("strain")
+	legends_comb = []
+	for parameter, include in properties.items():
+		legends = []
+		if include: # Check local bool variables temperature, ekin, epot, etot
+			y = []
+      if parameter == "stress":
+				directions = ["x", "y", "z"]
+				for direction in directions:
+					legends.append(parameter+"."+direction)
+				if strain_interval[1] != 0:
+					plt.axvline(x = strain_interval[0])
+					plt.axvline(x = strain_interval[1])
+					elastic_tensor = calc_elastic_components(traj_properties, strain_interval=strain_interval)
+					plt.title(f"Elasticity in GPa: {[int(elastic_tensor[i][i]) for i in range(3)]}")
+				for step in steps:
+					stress = []
+					for i in range(3):
+						stress.append(traj_properties[step][parameter][i][i])
+					y.append(stress)
 
-                for i in range(3):
-                    plt.plot(strains, [y_1[i] for y_1 in y], label=f"{parameter}_{directions[i]}")
-            
-            elif parameter == "msd":
+				for i in range(3):
+					plt.plot(strains, [y_1[i] for y_1 in y], label=f"{parameter}_{directions[i]}")
+      
+      elif parameter == "msd":
                 legends.append(parameter)
                 for step in steps:
                     y.append(calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions']))
@@ -370,27 +461,27 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 
                 print(len(steps))
                 plt.plot(steps, y, label=parameter)
+                
+			else:
+				legends.append(parameter)
 
-            else:
-                legends.append(parameter)
+				for step in steps:
+					y.append(traj_properties[step][parameter])
 
-                for step in steps:
-                    y.append(traj_properties[step][parameter])
-
-                plt.plot(strains, y, label=parameter)
-            
-            if not combined_plot:
-                plt.ylabel(property_units[parameter])
-                plt.legend()
-                plt.savefig(parameter+".pdf")
-                plt.clf()
-            else:
-                legends_comb += legends
-    
-    
-    if combined_plot and properties is not {}:
-        plt.legend(legends_comb, loc="lower right") 
-        plt.savefig("combined.pdf")
+				plt.plot(strains, y, label=parameter)
+			
+			if not combined_plot:
+				plt.ylabel(property_units[parameter])
+				plt.legend()
+				plt.savefig(parameter+".pdf")
+				plt.clf()
+			else:
+				legends_comb += legends
+	
+	
+	if combined_plot and properties is not {}:
+		plt.legend(legends_comb, loc="lower right") 
+		plt.savefig("combined.pdf")
 
 if __name__ == "__main__":
     process_data("cu.traj")
