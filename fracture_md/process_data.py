@@ -444,30 +444,30 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 
 				for i in range(3):
 					plt.plot(strains, [y_1[i] for y_1 in y], label=f"{parameter}_{directions[i]}")
-      
-     			elif parameter == "msd":
-                		legends.append(parameter)
-                		for step in steps:
-                    			y.append(calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions']))
-
-                		plt.plot(steps, y, label=parameter)
-            
-            		elif parameter == "L":
-                		legends.append(parameter)
-                		for step in steps:
-                    			msd = calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions'])
-                    			y.append(numpy.sqrt(msd)/(include))
-                		
+			
+			elif parameter == "msd":
+				legends.append(parameter)
+				for step in steps:
+					y.append(calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions']))
+					
 				plt.plot(steps, y, label=parameter)
-                
+				
+			elif parameter == "L":
+				legends.append(parameter)
+				for step in steps:
+					msd = calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions'])
+					y.append(numpy.sqrt(msd)/(include))
+					
+				plt.plot(steps, y, label=parameter)
+				
 			else:
 				legends.append(parameter)
-
+				
 				for step in steps:
 					y.append(traj_properties[step][parameter])
 
 				plt.plot(strains, y, label=parameter)
-			
+				
 			if not combined_plot:
 				plt.ylabel(property_units[parameter])
 				plt.legend()
