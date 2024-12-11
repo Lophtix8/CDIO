@@ -229,7 +229,7 @@ def calc_msd(original_position, position):
     msd = sd/len(original_position)
     return msd
 
-def calc_self_diffusion(traj_properties: list[dict[str, float]], step, dim = 3):
+def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval=[0, -1], dim = 3):
     
     step_interval = _check_calc_interval(traj_properties, step_interval)
 
