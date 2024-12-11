@@ -444,6 +444,8 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 
 				for i in range(3):
 					plt.plot(strains, [y_1[i] for y_1 in y], label=f"{parameter}_{directions[i]}")
+					max_stress = numpy.max([calc_yield_strength_point(traj_properties)[i][1] for i in range(3)])
+					plt.ylim(bottom=-5, top=1.5*max_stress)
 			
 			elif parameter == "msd":
 				legends.append(parameter)
