@@ -427,7 +427,7 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 		legends = []
 		if include: # Check local bool variables temperature, ekin, epot, etot
 			y = []
-      			if parameter == "stress":
+			if parameter == "stress":
 				directions = ["x", "y", "z"]
 				for direction in directions:
 					legends.append(parameter+"."+direction)
