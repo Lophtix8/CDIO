@@ -427,7 +427,7 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 		legends = []
 		if include: # Check local bool variables temperature, ekin, epot, etot
 			y = []
-      if parameter == "stress":
+      			if parameter == "stress":
 				directions = ["x", "y", "z"]
 				for direction in directions:
 					legends.append(parameter+"."+direction)
@@ -445,22 +445,20 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 				for i in range(3):
 					plt.plot(strains, [y_1[i] for y_1 in y], label=f"{parameter}_{directions[i]}")
       
-      elif parameter == "msd":
-                legends.append(parameter)
-                for step in steps:
-                    y.append(calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions']))
+     			elif parameter == "msd":
+                		legends.append(parameter)
+                		for step in steps:
+                    			y.append(calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions']))
 
-                print(len(steps))
-                plt.plot(steps, y, label=parameter)
+                		plt.plot(steps, y, label=parameter)
             
-            elif parameter == "L":
-                legends.append(parameter)
-                for step in steps:
-                    msd = calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions'])
-                    y.append(numpy.sqrt(msd)/(include))
-
-                print(len(steps))
-                plt.plot(steps, y, label=parameter)
+            		elif parameter == "L":
+                		legends.append(parameter)
+                		for step in steps:
+                    			msd = calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions'])
+                    			y.append(numpy.sqrt(msd)/(include))
+                		
+				plt.plot(steps, y, label=parameter)
                 
 			else:
 				legends.append(parameter)
