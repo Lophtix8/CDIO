@@ -43,7 +43,11 @@ class BuildTests(ut.TestCase):
         pass
 
 if __name__ == "__main__":
+    os.system(f"mkdir {curr_dir}/Mock_jobs")
+    build.construct_supercell(f"{curr_dir}/Mock_jobs", "Al2O3.poscar", 5,5,5)
+    build.construct_supercell(f"{curr_dir}/Mock_jobs", "SiO2.poscar", 10,5,5)
     tests = [ut.TestLoader().loadTestsFromTestCase(BuildTests)]
     testsuite = ut.TestSuite(tests)
     result = ut.TextTestRunner(verbosity=0).run(testsuite)
     sys.exit(not result.wasSuccessful())
+    os.system(f"rm -r {curr_dir}/Mock_jobs")
