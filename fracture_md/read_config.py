@@ -62,7 +62,8 @@ def check_data(config_data):
     
     keys_to_check = {"vasp_files", "x_scalings", "y_scalings", "z_scalings",
                      "custom_fracture", "fracture", "temps", "stress_plane", "t_interval",
-                     "iterations", "potential", "strain_rate", "strain_interval", "relaxation_iterations", "allocated_time"}
+                     "iterations", "potential", "strain_rate", "strain_interval", 
+                     "relaxation_iterations", "relaxation_rate", "allocated_time"}
     
     for config in config_data:
         
@@ -77,7 +78,7 @@ def check_data(config_data):
         int_keys = {"t_interval", "iterations", "relaxation_iterations", "strain_interval"}
         str_keys = {"stress_plane", "potential", "allocated_time"}
         bool_keys = {"custom_fracture"}
-        float_keys = {"strain_rate"}
+        float_keys = {"strain_rate", "relaxation_rate"}
         
         #Check that datatypes are valid
         if not all(isinstance(config[key], list) for key in list_keys):

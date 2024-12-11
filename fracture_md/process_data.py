@@ -10,7 +10,7 @@ from ase.calculators.kim.kim import KIM
 from matplotlib import pyplot as plt
 import pickle, os, yaml ,numpy
 
-property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa"}
+property_units = {"ekin": "eV", "epot": "eV", "etot": "eV", "stress": "GPa", "msd": "Å²", "L": ""}
 
 def process_data(traj_filename: str):
     """
@@ -219,46 +219,28 @@ def _check_calc_interval(traj_properties: list[dict[str, float]], step_interval)
 
     return step_interval
 
-def calc_msd(avg_position, position):
+def calc_msd(original_position, position):
     
     sd = 0
 
-    for i in range(len(avg_position)):
+    for i in range(len(original_position)):
         for j in range(3):
-            sd += (avg_position[i][j]-position[i][j])**2
-    msd = sd/len(avg_position)
+            sd += (original_position[i][j]-position[i][j])**2
+    msd = sd/len(original_position)
     return msd
 
-def calc_avg_msd(traj_properties: list[dict[str, float]], step_interval = [0, -1]):
-
-    step_interval = _check_calc_interval(traj_properties, step_interval)
-
-    delta_step = step_interval[1]-step_interval[0]
-
-    avg_position = calc_avg_position(traj_properties, step_interval=step_interval)
-    
-    tot_msd = 0
-    
-    positions = [traj_properties[i]['positions'] for i in range(*step_interval)]
-    for position in positions:	
-        tot_msd += calc_msd(avg_position, position)
-
-    avg_msd = tot_msd/(delta_step)
-    
-    return avg_msd
-
-def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval = [0, -1], d = 3):
+def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval=[0, -1], dim = 3):
     
     step_interval = _check_calc_interval(traj_properties, step_interval)
 
-    avg_position = calc_avg_position(traj_properties, step_interval=step_interval)
-    end_position = traj_properties[step_interval[1]]['positions'] 
-    start_position = traj_properties[step_interval[0]]['positions']
+    ref_position = traj_properties[0]['positions']
+    first_position = traj_properties[step_interval[0]]['positions'] 
+    second_position = traj_properties[step_interval[1]]['positions']
 
-    msd = calc_msd(avg_position, end_position)
-    #msd = calc_msd(start_position, end_position)
+    first_msd = calc_msd(ref_position, first_position)
+    second_msd = calc_msd(ref_position, second_position)
     
-    self_diffusion = 1/(2*d) * msd
+    self_diffusion = (second_msd-first_msd)/2*dim
 
     #avg_msd = calc_avg_msd(traj_properties, step_interval=step_interval)
     #self_diffusion = 1/(2*d) * avg_msd
@@ -444,8 +426,8 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 	for parameter, include in properties.items():
 		legends = []
 		if include: # Check local bool variables temperature, ekin, epot, etot
+			y = []
 			if parameter == "stress":
-				y = []
 				directions = ["x", "y", "z"]
 				for direction in directions:
 					legends.append(parameter+"."+direction)
@@ -462,15 +444,30 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
 
 				for i in range(3):
 					plt.plot(strains, [y_1[i] for y_1 in y], label=f"{parameter}_{directions[i]}")
-			else:
-				y = []
+			
+			elif parameter == "msd":
 				legends.append(parameter)
-
+				for step in steps:
+					y.append(calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions']))
+					
+				plt.plot(steps, y, label=parameter)
+				
+			elif parameter == "L":
+				legends.append(parameter)
+				for step in steps:
+					msd = calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions'])
+					y.append(numpy.sqrt(msd)/(include))
+					
+				plt.plot(steps, y, label=parameter)
+				
+			else:
+				legends.append(parameter)
+				
 				for step in steps:
 					y.append(traj_properties[step][parameter])
 
 				plt.plot(strains, y, label=parameter)
-			
+				
 			if not combined_plot:
 				plt.ylabel(property_units[parameter])
 				plt.legend()

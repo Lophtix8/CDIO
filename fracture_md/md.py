@@ -17,6 +17,7 @@ from fracture_md import setup_logging
 import read_config, process_data
 import sys, os
 import numpy as np
+import copy
 from ase.calculators.kim.kim import KIM
 
 logger = logging.getLogger("md")
@@ -48,7 +49,7 @@ def calcenergy(a, stress_plane, starting_size):
     return traj_property
     
 
-def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, strain_interval: int, t_interval: int, relaxation_iterations: int, potential_id: str, stress_plane: list[int]):
+def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, strain_interval: int, t_interval: int, relaxation_iterations: int, potential_id: str, stress_plane: list[int], relaxation_rate: float):
 
     """This function runs a molecular dynamics simulation and deposits the result in the 
     folder named "Simulation_results".
@@ -66,13 +67,14 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     # Set up crystal
     print(supercell_path)
     crystal = read(supercell_path)
-    
+    original_crystal = copy.deepcopy(crystal)
     # Describe the interatomic interactions with a potential-id from OpenKim.
     
     logger.info(f"Setting up interatomic potential for {supercell_file}.")
     try:
         calc = KIM(potential_id)
         crystal.calc = calc
+        original_crystal.calc = calc
     except:
         logger.error(f"Could not find the potential-id '{potential_id}' that was given.")
         return
@@ -81,10 +83,10 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     MaxwellBoltzmannDistribution(crystal, temperature_K=temp)
     
     # Relax the fractured system by running MD without strain in the beginning.
-    dyn_relax = NPTBerendsen(crystal, timestep= 5 * units.fs, temperature_K=temp, pressure_au=1.013*units.bar)
-    
+    #dyn_relax = NPTBerendsen(crystal, timestep= 5 * units.fs, temperature_K=temp, pressure_au=1.013*units.bar)
+    dyn_relax = Langevin(crystal, timestep= 5 * units.fs, temperature_K=temp, friction=0.01/units.fs) # 5 fs time step.
     # We want to run MD with constant energy using the VelocityVerlet algorithm.
-    dyn = dyn_relax = Langevin(crystal, timestep= 5 * units.fs, temperature_K=temp, friction=0.01/units.fs) # 5 fs time step.
+    dyn = Langevin(crystal, timestep= 5 * units.fs, temperature_K=temp, friction=0.01/units.fs) # 5 fs time step.
     
     dest_path = os.path.dirname(supercell_path) + "/Simulation_results"
     
@@ -108,7 +110,6 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
         crystal.set_cell(crystal.cell @ strain_matrix, scale_atoms=True)  # Scale cell and atom positions
     
     # Attach strain application to dynamics at every step
-    
 
     def printenergy(a=crystal):  # store a reference to atoms in the definition.
         """Function to print the potential, kinetic and total energy of the crystal."""
@@ -120,16 +121,49 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
               'Etot = %.3feV' % (epot, ekin, int_T, etot))
     
     # Run the dynamics
-    
+    atom_num = len(crystal)
+    stress = sum(crystal.get_stress()[i] for i in range(3))
+
+    relaxed_system_properties = {"cur_dir": -np.sign(stress), "prev_dir":-np.sign(stress)}
     # Relaxation
+    def relax_system(a = crystal, rsp = relaxed_system_properties):
+
+        # Using stress
+        stress = sum([a.get_stress()[i] for i in range(3)])
+        rsp['prev_dir'] = copy.deepcopy(rsp['cur_dir'])
+        rsp['cur_dir'] = dir = -np.sign(stress)
+        
+        print(f"stress: {stress}, cur_dir: {rsp['cur_dir']} prev_dir: {rsp['prev_dir']}")
+        a.cell *= (1+relaxation_rate*dir)
+
+        # Using total energy
+        """
+        cur_epot = rsp['cur_epot'] = a.get_total_energy()/atom_num
+        prev_epot = rsp['prev_epot']
+        ratio = abs((cur_epot-prev_epot)/prev_epot) 
+        if ratio > strain_rate:
+            ratio = strain_rate
+        if cur_epot > prev_epot:
+            rsp['dir'] *= -1
+        print(f"etot: {cur_epot}, ratio: {ratio}, dir: {rsp['dir']}")
+        a.cell *= (1+ratio*rsp['dir'])
+        rsp['prev_epot'] = cur_epot"""
+
+
+    dyn_relax.attach(relax_system, interval=10)
     logger.info(f"Relaxation of {supercell_file}.")
     #dyn_relax.attach(printenergy, interval=10)
-    dyn_relax.run(relaxation_iterations)
+    dir_same = relaxed_system_properties['cur_dir'] == relaxed_system_properties['prev_dir']
+    while (dir_same and relaxation_iterations > 0):
+        dyn_relax.run(10)
+        dir_same = relaxed_system_properties['cur_dir'] == relaxed_system_properties['prev_dir']
+        relaxation_iterations -= 10
     
     # Between relaxation and starting the simulation
-    starting_size = traj.atoms.get_cell()
+    starting_size = crystal.get_cell()
+    original_crystal.cell*=starting_size
     print(f"Starting size: {starting_size}")
-    traj_properties = [calcenergy(crystal, stress_plane, starting_size)]
+    traj_properties = [calcenergy(original_crystal, stress_plane, starting_size)]
 
     # Straining
     logger.info(f"Straining of {supercell_file}.")
@@ -154,6 +188,7 @@ if __name__ == "__main__":
     strain_rate = config_data['strain_rate']
     relaxation_iterations = config_data['relaxation_iterations']
     t_interval = config_data['t_interval']
+    relaxation_rate = config_data['relaxation_rate']
     stress_plane = [int(x) for x in config_data['stress_plane']]
     setup_logging.setup_logging('md_logging.conf')
-    run_md(poscar_path, temp, iterations, strain_rate, strain_interval, t_interval, relaxation_iterations, potential_id, stress_plane)
+    run_md(poscar_path, temp, iterations, strain_rate, strain_interval, t_interval, relaxation_iterations, potential_id, stress_plane, relaxation_rate)
