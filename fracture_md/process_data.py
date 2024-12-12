@@ -167,14 +167,17 @@ def write_all_to_pkl(job_dir: str) -> list[str]:
     return pickle_paths
 
 def calc_specific_heat_capacity(traj_properties: list[dict[str,float]], step_interval = [0, -1]):
-    step_interval = _check_calc_interval(step_interval)
-
-    total_energy = [traj_properties[i]['etot'] for i in range(step_interval[0], step_interval[1])]
-    variance = numpy.var(total_energy)
+    step_interval = _check_calc_interval(traj_properties, step_interval)
 
     temp = traj_properties[-1]['temperature']
+    atom_num = len(traj_properties[-1]['positions'])
+
+    total_energy = [traj_properties[i]['etot']/atom_num for i in range(step_interval[0], step_interval[1])]
+    variance = numpy.var(total_energy)
 
     spec_heat = variance/((units.kB/temp)**2)
+	
+
 
     return spec_heat
 
