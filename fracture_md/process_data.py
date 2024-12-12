@@ -456,6 +456,7 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
                     y.append(calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions']))
                     
                 plt.plot(steps, y, label=parameter)
+                plt.ylim(bottom=0, top=numpy.max(y)*1.5)
                 
             elif parameter == "L":
                 legends.append(parameter)
