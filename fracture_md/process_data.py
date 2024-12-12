@@ -381,7 +381,7 @@ def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
 
 def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]):
 	plt.clf()
-	plt.xlabel("Strain")
+	plt.xlabel("Temperature (K)")
 	plt.ylabel("Stress (GPa)")
 	strain_stress_points = {}
 
@@ -392,19 +392,33 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
 
 		max_strain_stress = calc_yield_strength_point(traj_properties)
 		stress_direction = get_stress_direction(material)
-		x = max_strain_stress[stress_direction][0]
+		x = traj_properties[-1]["temperature"]
+		#y = max_strain_stress[stress_direction][0]
+        #x = max_strain_stress[stress_direction][0]
 		y = max_strain_stress[stress_direction][1]
 
 		strain_stress_points[material_name].append([x,y])
 		
 		color = "grey"
-		if "C" in material_name:
+		
+		if "TiC" in material_name:
 			color = "black"
-		elif "N" in material_name:
+			shape = "o"
+		elif "Ti2C" in material_name:
+			color = "black"
+			shape = "^"
+		elif "TiN" in material_name:
 			color = "blue"
+			shape = "s"
+		elif "Ti2N" in material_name:
+			color = "blue"
+			shape = "D"
+		else:
+			color = "red"
+			shape = "+"
 
-		plt.scatter(x, y, c=color)
-	
+		plt.scatter(x, y, c=color, marker = shape)
+
 	for material_name, points in strain_stress_points.items():
 		tot_x = 0
 		tot_y = 0
@@ -412,7 +426,7 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
 			tot_x += point[0]
 			tot_y += point[1]
 		points_len = len(points)
-		plt.text(tot_x/points_len, tot_y/points_len, material_name)
+		#plt.text(tot_x/points_len, tot_y/points_len, material_name)
 
 	plt.savefig("scatterplot.pdf")
 
