@@ -229,7 +229,7 @@ def calc_msd(original_position, position):
     msd = sd/len(original_position)
     return msd
 
-def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval=[0, -1], dim = 3):
+def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval=[0, -1]):
     
     step_interval = _check_calc_interval(traj_properties, step_interval)
 
@@ -239,8 +239,10 @@ def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval=[
 
     first_msd = calc_msd(ref_position, first_position)
     second_msd = calc_msd(ref_position, second_position)
+
+    delta_step = step_interval[1]-step_interval[0]
     
-    self_diffusion = (second_msd-first_msd)/2*dim
+    self_diffusion = (second_msd-first_msd)/(6*delta_step)
 
     #avg_msd = calc_avg_msd(traj_properties, step_interval=step_interval)
     #self_diffusion = 1/(2*d) * avg_msd
@@ -456,6 +458,7 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
                     y.append(calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions']))
                     
                 plt.plot(steps, y, label=parameter)
+                plt.xlabel("Interval")
                 plt.ylim(bottom=0, top=numpy.max(y)*1.5)
                 
             elif parameter == "L":
@@ -463,8 +466,9 @@ def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = Fal
                 for step in steps:
                     msd = calc_msd(traj_properties[0]['positions'], traj_properties[step]['positions'])
                     y.append(numpy.sqrt(msd)/(include))
-                    
-                plt.plot(steps, y, label=parameter)
+
+
+                plt.plot(steps, steps, label=parameter)
                 
             else:
                 legends.append(parameter)
