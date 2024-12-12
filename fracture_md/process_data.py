@@ -166,6 +166,18 @@ def write_all_to_pkl(job_dir: str) -> list[str]:
 
     return pickle_paths
 
+def calc_specific_heat_capacity(traj_properties: list[dict[str,float]], step_interval = [0, -1]):
+    step_interval = _check_calc_interval(step_interval)
+
+    total_energy = [traj_properties[i]['etot'] for i in range(step_interval[0], step_interval[1])]
+    variance = numpy.var(total_energy)
+
+    temp = traj_properties[-1]['temperature']
+
+    spec_heat = variance/((units.kB/temp)**2)
+
+    return spec_heat
+
 def calc_avg_temp(traj_properties: list[dict[str, float]], step_interval = [0, -1]):
     
     if step_interval[0] < 0:
@@ -229,7 +241,7 @@ def calc_msd(original_position, position):
     msd = sd/len(original_position)
     return msd
 
-def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval=[0, -1], dim = 3):
+def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval=[0, -1]):
     
     step_interval = _check_calc_interval(traj_properties, step_interval)
 
@@ -240,7 +252,9 @@ def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval=[
     first_msd = calc_msd(ref_position, first_position)
     second_msd = calc_msd(ref_position, second_position)
     
-    self_diffusion = (second_msd-first_msd)/2*dim
+    delta_step = step_interval[1]-step_interval[0]
+
+    self_diffusion = (second_msd-first_msd)/(6*delta_step)
 
     #avg_msd = calc_avg_msd(traj_properties, step_interval=step_interval)
     #self_diffusion = 1/(2*d) * avg_msd
