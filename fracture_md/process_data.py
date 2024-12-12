@@ -371,9 +371,6 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
                         "Fe" : {'color': 'gray', 'marker': '.'}}
 
 
-    plt.clf()
-    plt.xlabel("Strain")
-    plt.ylabel("Stress (GPa)")
     strain_stress_points = {}
 
     for material, traj_properties in materials_properties.items():
@@ -381,34 +378,30 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
         max_strain_stress = calc_yield_strength_point(traj_properties[1:])
         stress_direction = get_stress_direction(material)
         
-        #x = max_strain_stress[stress_direction][0]
-        x = traj_properties[-1]['temperature']
-        y = max_strain_stress[stress_direction][1]
-
-        if numpy.isnan(x) or numpy.isnan(y):
+        temp = traj_properties[-1]['temperature']
+        #strength = max_strain_stress[stress_direction][1]
+        toughness = max_strain_stress[stress_direction][0]
+        if numpy.isnan(temp) or numpy.isnan(toughness):
             continue
        
         ## End check ##
 
         material_name = get_material_name(material)
-
-        temp = plot_properties[material_name]
-        #plt.scatter(x, y, c=temp['color'], marker=temp['marker'])
-        
+ 
         if material_name not in strain_stress_points.keys():
             strain_stress_points[material_name] = []
             
         
-        strain_stress_points[material_name].append([x,y])
-
+        strain_stress_points[material_name].append([temp,toughness])
     for material_name, points in strain_stress_points.items():
         temp = plot_properties[material_name]
         X,Y = zip(*sorted(points))
         plt.plot(X, Y, c=temp['color'], marker=temp['marker'], label = material_name)
-        plt.legend()
-        #plt.plot([point[0] for point in points], [point[1] for point in points], c=temp['color'], marker=temp['marker'])
+        plt.legend(loc = "upper left")
 
-    plt.savefig("scatterplot.pdf")
+    plt.xlabel("Temperature (K)")
+    plt.ylabel("Strain")
+    plt.savefig("toughness_vs_T.pdf")
 
 
 def visualize(traj_properties: list[dict[str, float]], combined_plot: bool = False, strain_interval: list[float]=[0,0], **properties: bool) -> None:
