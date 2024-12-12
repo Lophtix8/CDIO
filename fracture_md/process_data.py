@@ -393,9 +393,9 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
 		max_strain_stress = calc_yield_strength_point(traj_properties)
 		stress_direction = get_stress_direction(material)
 		x = traj_properties[-1]["temperature"]
-		#y = max_strain_stress[stress_direction][0]
+		y = max_strain_stress[stress_direction][0]
         #x = max_strain_stress[stress_direction][0]
-		y = max_strain_stress[stress_direction][1]
+		#y = max_strain_stress[stress_direction][1]
 
 		strain_stress_points[material_name].append([x,y])
 		
@@ -417,7 +417,7 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
 			color = "red"
 			shape = "+"
 
-		plt.scatter(x, y, c=color, marker = shape)
+		plt.scatter(x, y, c=color)
 
 	for material_name, points in strain_stress_points.items():
 		tot_x = 0

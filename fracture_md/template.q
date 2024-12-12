@@ -2,7 +2,6 @@
 #
 #SBATCH -J tfya99_fracture_md
 #SBATCH -A liu-compute-2024-33
-#SBATCH --reservation devel
 #SBATCH -t 00:30:00
 #SBATCH -N 1
 #SBATCH -n 32
