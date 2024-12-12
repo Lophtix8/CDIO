@@ -367,7 +367,8 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
                         "Ti2N" : {'color': 'blue', 'marker': 'D'},
                         "TiC" : {'color':'black' , 'marker': 'o'},
                         "Ti2C" : {'color':'black' , 'marker': '^'},
-                        "Ti" : {'color': 'red', 'marker': '+'}}
+                        "Ti" : {'color': 'red', 'marker': '+'},
+                        "Fe" : {'color': 'gray', 'marker': '.'}}
 
 
     plt.clf()
@@ -380,7 +381,8 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
         max_strain_stress = calc_yield_strength_point(traj_properties[1:])
         stress_direction = get_stress_direction(material)
         
-        x = max_strain_stress[stress_direction][0]
+        #x = max_strain_stress[stress_direction][0]
+        x = traj_properties[-1]['temperature']
         y = max_strain_stress[stress_direction][1]
 
         if numpy.isnan(x) or numpy.isnan(y):
@@ -391,22 +393,20 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
         material_name = get_material_name(material)
 
         temp = plot_properties[material_name]
-        plt.scatter(x, y, c=temp['color'], marker=temp['marker'], label=material_name)
+        #plt.scatter(x, y, c=temp['color'], marker=temp['marker'])
         
         if material_name not in strain_stress_points.keys():
             strain_stress_points[material_name] = []
-            plt.legend()
+            
         
         strain_stress_points[material_name].append([x,y])
-    
+
     for material_name, points in strain_stress_points.items():
-        tot_x = 0
-        tot_y = 0
-        for point in points:
-            tot_x += point[0]
-            tot_y += point[1]
-        points_len = len(points)
-        plt.text(tot_x/points_len, tot_y/points_len, material_name)
+        temp = plot_properties[material_name]
+        X,Y = zip(*sorted(points))
+        plt.plot(X, Y, c=temp['color'], marker=temp['marker'], label = material_name)
+        plt.legend()
+        #plt.plot([point[0] for point in points], [point[1] for point in points], c=temp['color'], marker=temp['marker'])
 
     plt.savefig("scatterplot.pdf")
 
