@@ -358,7 +358,7 @@ def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
         for i in range(3):
             temp_stress = step["stress"][i][i]
             if temp_stress > max_stress_strain[i][1]:
-                max_stress_strain[i][0] = numpy.max(step['strain'])
+                max_stress_strain[i][0] = numpy.nanmax(step['strain'])
                 max_stress_strain[i][1] = temp_stress
     
     return max_stress_strain
