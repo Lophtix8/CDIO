@@ -22,8 +22,16 @@ def process_data(traj_filename: str):
     visualize(traj_properties, temperature=True)
     return
 
-def get_stress_direction(crystal_name: str):
-	crystal_properties = crystal_name.split('_')
+def get_stress_direction(file_name: str):
+	"""Function that takes the file name of a .traj or .pkl file and returns the stress direction.
+	
+	Args:
+        file_name (str): The file name of the crystal withouth the whole path.
+		
+	Returns:
+        cell_index (int): The index of the direction. 0, 1, 2 = x, y, z
+	"""
+	crystal_properties = file_name.split('_')
 	
 	stress_index = 2
 	if crystal_properties[0] == "fractured":
@@ -41,13 +49,24 @@ def get_stress_direction(crystal_name: str):
 		raise Exception("Stress plane can must have one 1s and two 0s.")
 	return cell_index
 
-def get_material_name(crystal_name: str):
-	crystal_properties = crystal_name.split('_')
-	name_index = 0
-	if crystal_properties[0] == "fractured":
-		name_index = 1
+def get_material_name(file_name: str):
+    """
+    Function that takes the file name of a .traj or .pkl file, without the full path, and returns the crystal name, i.e. Ti2N
 
-	return crystal_properties[name_index]
+    Args:
+        file_name (str): The file name of the job.
+		
+	Returns:
+        crystal_name (str): The crystal name, i.e. Ti2N.
+    """
+    crystal_properties = file_name.split('_')
+    name_index = 0
+    if crystal_properties[0] == "fractured":
+        name_index = 1
+    
+    crystal_name = crystal_properties[name_index]
+
+    return crystal_name
 	
 
 def read_traj_file(traj_filename: str, potential_id: str) -> list[dict[str, float]]:
@@ -167,7 +186,18 @@ def write_all_to_pkl(job_dir: str) -> list[str]:
     return pickle_paths
 
 def calc_avg_temp(traj_properties: list[dict[str, float]], step_interval = [0, -1]):
-    
+    """
+	Function that calculates the average temperature of a traj_properties dictionary.
+	
+	Args:
+        traj_properties (list): The trajectory properties dictionary as returned by read_traj_file().
+		step_interval (list): A 2-vector with the step interval to calculate the average temperature from.
+		
+	Returns:
+        avg_temp (float): The calculated average temperature.
+	
+	"""
+
     if step_interval[0] < 0:
         step_interval[0] = 0
     
@@ -188,6 +218,16 @@ def calc_avg_temp(traj_properties: list[dict[str, float]], step_interval = [0, -
     return avg_temp
 
 def calc_avg_position(traj_properties: list[dict[str,float]], step_interval = [0, -1]):
+    """
+    Function that calculates the average position of each atom.
+
+	Args:
+        traj_properties (list): The trajectory properties dictionary as returned by read_traj_file().
+        step_interval (list): A 2-vector with the step interval to calculate the average position from.
+	
+	Returns:
+        avg_position (list): Returns a list of 3-vectors being the average position for each atom.
+    """
     
     step_interval = _check_calc_interval(traj_properties, step_interval)
 
@@ -208,6 +248,16 @@ def calc_avg_position(traj_properties: list[dict[str,float]], step_interval = [0
     return avg_position
 
 def _check_calc_interval(traj_properties: list[dict[str, float]], step_interval):
+    """
+    Private function that checks that the given step interval is correct.
+
+    Args:
+        traj_properties (list): The trajectory properties dictionary as returned by read_traj_file().
+        step_interval (list): A 2-vector with the step interval to control.
+		
+	Returns:
+        step_interval (list): The corrected step_interval.
+	"""
     if step_interval[0] < 0:
         step_interval[0] = 0
     
@@ -220,6 +270,16 @@ def _check_calc_interval(traj_properties: list[dict[str, float]], step_interval)
     return step_interval
 
 def calc_msd(original_position, position):
+    """
+	Function that calculates the mean square displacement of all atoms.
+	
+	Args:
+        original_position (list): List of 3-vectors containing the atoms' original positions. 
+		position (list): List of 3-vectors containing the atoms' current positions.
+	
+	Returns:
+        msd (float): The mean square displacement.
+	"""
     
     sd = 0
 
@@ -230,6 +290,15 @@ def calc_msd(original_position, position):
     return msd
 
 def calc_self_diffusion(traj_properties: list[dict[str, float]], step_interval=[0, -1], dim = 3):
+    """
+	Function that calculates the self diffusion of a material.
+	
+	Args:
+        traj_properties (list): The trajectory properties dictionary as returned by read_traj_file().
+        step (int): The step for which to return the self diffusion.
+	Returns:
+        self_diffusion (float): The self diffusion of the material at a given step.
+	"""
     
     step_interval = _check_calc_interval(traj_properties, step_interval)
 
@@ -349,19 +418,29 @@ def calc_elastic_components(traj_properties: list[dict[str, float]], strain_inte
 
 	return cijs
 
-def calc_yield_strength_point(traj_properties: list[dict[str, float]]):
-	max_stress_strain = [[0, 0], [0,0], [0,0]]
-	
-	for step in traj_properties:
-		for i in range(3):
-			temp_stress = step["stress"][i][i]
-			if temp_stress > max_stress_strain[i][1]:
-				max_stress_strain[i][0] = step['strain']
-				max_stress_strain[i][1] = temp_stress
-	
-	return max_stress_strain
+def calc_ultimate_strength_point(traj_properties: list[dict[str, float]]):
+    """
+    Function that finds the ultimate strength of a simulation.
 
-def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]):
+    Args:
+        traj_properties (list): Trajectory properties as given by process_data.read_traj_file().
+
+    Returns:
+        max_stress_strain (list): A 2-vector containing the ultimate strength and corresponding strain.
+    """
+
+    max_stress_strain = [[0, 0], [0,0], [0,0]]
+
+    for step in traj_properties:
+        for i in range(3):
+            temp_stress = step["stress"][i][i]
+            if temp_stress > max_stress_strain[i][1]:
+                max_stress_strain[i][0] = step['strain']
+                max_stress_strain[i][1] = temp_stress
+
+    return max_stress_strain
+
+def plot_ultimate_strengths(materials_properties: dict[str, list[dict[str, float]]]):
 	plt.clf()
 	plt.xlabel("Strain")
 	plt.ylabel("Stress (GPa)")
@@ -372,7 +451,7 @@ def plot_yield_strengths(materials_properties: dict[str, list[dict[str, float]]]
 		if material_name not in strain_stress_points.keys():
 			strain_stress_points[material_name] = []
 
-		max_strain_stress = calc_yield_strength_point(traj_properties)
+		max_strain_stress = calc_ultimate_strength_point(traj_properties)
 		stress_direction = get_stress_direction(material)
 		x = max_strain_stress[stress_direction][0]
 		y = max_strain_stress[stress_direction][1]
