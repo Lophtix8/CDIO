@@ -328,7 +328,7 @@ def calc_elastic_components(traj_properties: list[dict[str, float]], strain_inte
     start = 0
     stop = 0
     
-    for i in range(len(traj_properties)):
+    for i in range(1, len(traj_properties)):
         strain = traj_properties[i]['strain']
         if strain_tensor:
             strain = numpy.sqrt(sum([strain[i][i]**2 for i in range(3)]))
