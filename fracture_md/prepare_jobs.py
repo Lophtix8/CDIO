@@ -1,3 +1,7 @@
+"""
+ Copyright (c) 2024 JALL-E
+ Licensed under the MIT License. See LICENSE file in the project root for details.
+"""
 
 from fracture_md import read_config,build,job_manager
 

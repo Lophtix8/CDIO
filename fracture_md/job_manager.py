@@ -1,3 +1,8 @@
+"""
+ Copyright (c) 2024 JALL-E
+ Licensed under the MIT License. See LICENSE file in the project root for details.
+"""
+
 import os
 import logging
 import copy
@@ -110,16 +115,17 @@ def create_jobs(config : dict, poscar_filepath : str):
 
         name = poscar_name.removesuffix(".poscar") +"_"+config['stress_plane']+ "_" + str(temp) + "K"
         config_filepath = f'{job_dir}/{name}.yaml'
+        alloc_time = temp_conf["allocated_time"]
         
         with open(config_filepath, 'w') as file:
             yaml.dump([temp_conf], file, default_flow_style=None)
-        job_path = write_job(template_path, poscar_filepath, config_filepath,temp)
+        job_path = write_job(template_path, poscar_filepath, config_filepath, temp, alloc_time)
         
         job_paths.append(job_path)
 
     return job_paths
 
-def write_job(template_path: str, poscar_filepath : str, config_filepath : str, temp : int, nodes: int = 1, cores:int = 32) -> str:
+def write_job(template_path: str, poscar_filepath : str, config_filepath : str, temp : int, alloc_time : str, nodes: int = 1, cores:int = 32) -> str:
     """
     Function that writes a job, i.e. .q file, given a template. Using provided template, the amount of nodes and cores can be modified.
 
@@ -127,9 +133,10 @@ def write_job(template_path: str, poscar_filepath : str, config_filepath : str, 
         template_path (str): Path to the template .q-file.
         poscar_filepath (str): Path to the poscar for the simulation.
         config_filepath (str): Path to the config file for the simulation.
-        temp (int): Temperature of the simulation. Used for writing the queue name in the .q-file.
+        temp (int): Temperature of the simulation. Used for writing the queue name in the .q-file. 
+        alloc_time (str): The desired allocation time for the simulation on the format HH:MM:SS.
 
-    Keyword Args:
+    Keyword Args: 
         nodes=1 (int): The amount of nodes for the simulation.
         cores=32 (int): The amound of cores for the simulation.
 
@@ -175,6 +182,10 @@ def write_job(template_path: str, poscar_filepath : str, config_filepath : str, 
             if parts[1] == "-J":
                 queue_name = f"{os.path.basename(poscar_filepath.rstrip('.poscar'))}_{temp}K"
                 parts[2] = queue_name
+            
+            if parts[1] == "-t":
+                parts[2] = alloc_time
+
         output = ' '.join(parts)+"\n"
         job_file.write(output)
     

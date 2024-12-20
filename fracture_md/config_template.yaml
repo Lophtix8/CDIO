@@ -12,6 +12,7 @@
   strain_interval: 10
   t_interval: 5
   iterations: 2000
+  allocated_time: "01:00:00"
 - vasp_files: [C.poscar]
   x_scalings: [20]
   y_scalings: [20]
@@ -26,3 +27,4 @@
   strain_interval: 10
   t_interval: 5
   iterations: 2000
+  allocated_time: "00:15:00"

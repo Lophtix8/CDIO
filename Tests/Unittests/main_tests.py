@@ -6,17 +6,9 @@ from fracture_md import main
 
 class MainTests(ut.TestCase):
 
-    def test_run_jobs(self):
-        pass
-
-    def test_prepare_jobs(self):
-        pass
-
-    def test_queue_jobs(self):
-        pass
-
     def test_main(self):
-        pass
+        wrong_option = main.main("ndjla","nvdjla")
+        self.assertFalse(wrong_option)
 
 if __name__ == "__main__":
     tests = [ut.TestLoader().loadTestsFromTestCase(MainTests)]
