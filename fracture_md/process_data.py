@@ -456,7 +456,7 @@ def plot_ultimate_strengths(materials_properties: dict[str, list[dict[str, float
 
     for material, traj_properties in materials_properties.items():
         ## Check for valid stress/strain point
-        max_strain_stress = calc_yield_strength_point(traj_properties[1:])
+        max_strain_stress = calc_ultimate_strength_point(traj_properties[1:])
         stress_direction = get_stress_direction(material)
         
         temp = traj_properties[-1]['temperature']
