@@ -161,7 +161,7 @@ def run_md(supercell_path: str, temp: int, num_steps: int, strain_rate: float, s
     
     # Between relaxation and starting the simulation
     starting_size = crystal.get_cell()
-    original_crystal.cell*=starting_size
+    original_crystal.cell = starting_size
     print(f"Starting size: {starting_size}")
     traj_properties = [calcenergy(original_crystal, stress_plane, starting_size)]
 
