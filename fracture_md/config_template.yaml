@@ -13,6 +13,7 @@
   t_interval: 5
   iterations: 2000
   allocated_time: "01:00:00"
+  relaxation_rate: 0.001
 - vasp_files: [C.poscar]
   x_scalings: [20]
   y_scalings: [20]
@@ -28,3 +29,4 @@
   t_interval: 5
   iterations: 2000
   allocated_time: "00:15:00"
+  relaxation_rate: 0.001
